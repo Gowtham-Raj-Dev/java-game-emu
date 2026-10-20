@@ -19,6 +19,8 @@ http.createServer((req, res) => {
   let base = root;
   if (p.startsWith('/_local/')) { base = localDir; p = p.substring('/_local'.length); }
   if (p.endsWith('/')) p += 'index.html';
+  // Clean URLs like GitHub Pages: /games serves games.html.
+  if (!path.extname(p) && fs.existsSync(path.join(base, p + '.html'))) p += '.html';
   const file = path.normalize(path.join(base, p));
   if (!file.startsWith(path.normalize(base))) { res.writeHead(403); return res.end(); }
   fs.stat(file, (err, st) => {
