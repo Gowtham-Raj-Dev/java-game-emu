@@ -20,7 +20,18 @@
 .sf-codelove:hover img { opacity: 0.85; }
 .sf-bottom { margin-top: 28px; padding-top: 24px; border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px 24px; font-size: 0.85rem; }
 .sf-bottom p { margin: 0; }
-.sf-bottom .heart { color: #ff4d6d; }
+.sf-bottom p { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 0 4px; }
+.heart-wrap { position: relative; display: inline-flex; align-items: center; justify-content: center; }
+.heart-btn { position: relative; z-index: 1; display: inline-flex; padding: 0 2px; border: 0; background: none; color: var(--muted); cursor: pointer; transition: color .15s ease; }
+.heart-btn:hover, .heart-btn.on { color: #ef4444; }
+.heart-btn svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.heart-btn.on svg { fill: currentColor; }
+.fly-heart { position: absolute; left: 50%; top: 50%; pointer-events: none; animation: fly-up 2s ease-out forwards; }
+@keyframes fly-up {
+  0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
+  50% { opacity: 1; }
+  100% { transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(1.5) rotate(var(--r)); opacity: 0; }
+}
 .sf-bottom strong a { color: var(--fg); font-weight: 600; }
 .sf-bottom strong a:hover { color: var(--key); }
 .sf-legal { margin-top: 14px; font-size: 0.78rem; opacity: 0.75; }
