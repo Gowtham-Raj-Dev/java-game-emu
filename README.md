@@ -2,7 +2,7 @@
 
 JavaPlay plays old Java (J2ME / MIDP) phone games. The game screen sits on top and a phone keypad sits below it.
 
-- **Website + browser player:** `web/` (published with GitHub Pages)
+- **Website + browser player:** `web/`, live at **https://javagame-emu.codelove.in** (GitHub Pages, `gh-pages` = subtree of `web/`). Part of the [CodeLove](https://codelove.in) network.
 - **Android app:** `android/` (a 168 KB native shell that runs the same engine)
 
 The emulator engine is written from scratch in JavaScript. It does not use J2ME Loader or any other emulator code.
@@ -28,9 +28,20 @@ The player UI is `web/play.html` + `web/app/`.
 node serve.js            # http://localhost:8080  (also prints a LAN address for your phone)
 ```
 
+## Publish the website
+
+```bash
+git push origin main
+git subtree push --prefix web origin gh-pages
+```
+
+Domain setup (once): DNS for codelove.in → `CNAME  javagame-emu  →  gowtham-raj-dev.github.io`. GitHub → Settings → Pages → Custom domain → `javagame-emu.codelove.in` → **Enforce HTTPS**. ([web/CNAME](web/CNAME) is included.) Then submit `https://javagame-emu.codelove.in/sitemap.xml` in Google Search Console.
+
+SEO files: `web/sitemap.xml` (update `lastmod` when pages change), `web/robots.txt`, and the social preview `web/assets/og.png` (re-render with `node tools/og/render.js`).
+
 ## Build the Android app
 
-Needs JDK 21 and the Android SDK (`local.properties` → `sdk.dir=...`).
+Needs JDK 21 and the Android SDK. Both live in `toolchain/` (git-ignored, machine-local): `local.properties` → `sdk.dir=...\toolchain\sdk`, and set `JAVA_HOME` to `toolchain\jdk-21.0.12.1+1`.
 
 ```bash
 cd android

@@ -6,7 +6,7 @@ const path = require('path');
 const os = require('os');
 
 const root = path.join(__dirname, 'web');
-const localDir = process.env.KP_LOCAL_DIR || 'D:/Gowtham/toolchain/test-games';
+const localDir = process.env.KP_LOCAL_DIR || path.join(__dirname, 'toolchain', 'test-games');
 const port = Number(process.env.PORT) || 8080;
 const types = {
   '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8',

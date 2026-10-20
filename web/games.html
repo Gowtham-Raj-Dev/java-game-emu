@@ -3,8 +3,43 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Free Java Games – JavaPlay</title>
-<meta name="description" content="Free J2ME Java phone games you can play right in your browser or in the JavaPlay Android app. Open-source and freely licensed games, no sign-up.">
+<title>163 Free Java Games – Play J2ME Phone Games Online | JavaPlay</title>
+<meta name="description" content="163 free J2ME Java phone games you can play online in your browser or in the JavaPlay Android app. Puzzle, arcade, card and board games, all openly licensed, no sign-up.">
+<meta name="keywords" content="free java games, play java games online, j2me games, java phone games, jar games download, old mobile games online, nokia java games, free j2me games, codelove">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="canonical" href="https://javagame-emu.codelove.in/games.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="JavaPlay by CodeLove">
+<meta property="og:locale" content="en_US">
+<meta property="og:url" content="https://javagame-emu.codelove.in/games.html">
+<meta property="og:title" content="163 Free Java Games – Play J2ME Phone Games Online | JavaPlay">
+<meta property="og:description" content="Free, openly licensed Java phone games. Play online in your browser or in the JavaPlay Android app.">
+<meta property="og:image" content="https://javagame-emu.codelove.in/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="163 Free Java Games – Play J2ME Phone Games Online | JavaPlay">
+<meta name="twitter:description" content="Free, openly licensed Java phone games. Play online in your browser or in the JavaPlay Android app.">
+<meta name="twitter:image" content="https://javagame-emu.codelove.in/assets/og.png">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  "@id": "https://javagame-emu.codelove.in/games.html",
+  "name": "Free Java Games",
+  "url": "https://javagame-emu.codelove.in/games.html",
+  "description": "163 free, openly licensed J2ME Java phone games to play online or on Android.",
+  "isPartOf": { "@id": "https://javagame-emu.codelove.in/#website" },
+  "publisher": { "@type": "Organization", "@id": "https://codelove.in/#organization", "name": "CodeLove", "url": "https://codelove.in" },
+  "breadcrumb": {
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "JavaPlay", "item": "https://javagame-emu.codelove.in/" },
+      { "@type": "ListItem", "position": 2, "name": "Free Java Games", "item": "https://javagame-emu.codelove.in/games.html" }
+    ]
+  }
+}
+</script>
 <meta name="theme-color" content="#101217">
 <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
@@ -70,7 +105,6 @@ a { color: var(--key); }
 .screen { position: relative; border-radius: 13px; overflow: hidden; background: #000; border: 4px solid #0b0c10; box-shadow: inset 0 0 0 1px #2c3140; }
 .screen::before { content: ""; display: block; padding-top: 133.33%; }
 .screen img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; image-rendering: pixelated; }
-.screen .ico { position: absolute; left: 8px; bottom: 8px; top: auto; width: 36px; height: 36px; border-radius: 9px; background: #0b0c10; border: 2px solid rgba(255, 255, 255, 0.12); image-rendering: pixelated; object-fit: contain; }
 .card h3 { font: 700 1rem/1.25 var(--body); margin: 12px 4px 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .card .meta { display: flex; justify-content: space-between; align-items: center; margin: 0 4px 10px; font: 500 0.75rem var(--mono); color: var(--muted); }
 .card .cat { color: var(--key); }
@@ -80,6 +114,11 @@ a { color: var(--key); }
 .empty { color: var(--muted); padding: 40px 0; text-align: center; }
 
 .credit { color: var(--muted); font-size: 0.88rem; border-top: 1px solid var(--line); padding-block: 26px calc(30px + env(safe-area-inset-bottom, 0px)); }
+.network { display: grid; gap: 10px; padding-bottom: 18px; margin-bottom: 14px; border-bottom: 1px solid var(--line); }
+.network h2 { margin: 0; font: 600 0.75rem/1 var(--mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--fg); }
+.network ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px 20px; }
+.network a { color: var(--muted); text-decoration: none; }
+.network a:hover { color: var(--key); }
 
 /* detail sheet */
 .modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 30; background: rgba(5, 6, 9, 0.7); display: flex; align-items: center; justify-content: center; padding: 16px; }
@@ -137,7 +176,22 @@ a { color: var(--key); }
 </main>
 
 <footer class="credit">
-  <div class="wrap">Games are by their authors and shared under the license shown on each game. Open a game to see its author, license and source code. <a href="index.html">Back to JavaPlay</a></div>
+  <div class="wrap">
+    <nav class="network" aria-label="CodeLove network">
+      <h2>CodeLove network</h2>
+      <ul>
+        <li><a href="https://codelove.in">CodeLove</a></li>
+        <li><a href="https://models.codelove.in">Free 3D Models</a></li>
+        <li><a href="https://games.codelove.in">Free 3D Games</a></li>
+        <li><a href="https://downloader.codelove.in">Instagram &amp; Pinterest Downloader</a></li>
+        <li><a href="https://linkinbio.codelove.in">Link in Bio</a></li>
+        <li><a href="https://videotogif.codelove.in">Video to GIF</a></li>
+        <li><a href="https://videotoimages.codelove.in">Video to Images</a></li>
+        <li><a href="https://utubeflow.codelove.in">Free YouTube Automation</a></li>
+      </ul>
+    </nav>
+    Games are by their authors and shared under the license shown on each game. Open a game to see its author, license and source code. <a href="index.html">Back to JavaPlay</a> · A <a href="https://codelove.in">CodeLove</a> product
+  </div>
 </footer>
 
 <div class="modal" id="modal" hidden>
@@ -175,7 +229,7 @@ a { color: var(--key); }
     const list = all.filter((g) => (cat === 'All' || g.cat === cat) && words.every((w) => (g.name + ' ' + g.cat + ' ' + g.desc).toLowerCase().includes(w)));
     $('grid').innerHTML = list.map((g) =>
       '<article class="card" tabindex="0" data-id="' + esc(g.id) + '" aria-label="' + esc(g.name) + '">' +
-      '<div class="screen">' + (g.shot ? '<img loading="lazy" alt="" src="' + esc(g.shot) + '">' : '') + (g.icon ? '<img class="ico" loading="lazy" alt="" src="' + esc(g.icon) + '">' : '') + '</div>' +
+      '<div class="screen">' + (g.shot ? '<img loading="lazy" alt="" src="' + esc(g.shot) + '">' : '') + '</div>' +
       '<h3>' + esc(g.name) + '</h3>' +
       '<div class="meta"><span class="cat">' + esc(g.cat) + '</span><span>' + g.kb + ' KB</span></div>' +
       '<div class="acts"><a class="btn primary" href="play.html?game=' + encodeURIComponent(g.id) + '">▶ Play</a>' +
@@ -192,7 +246,7 @@ a { color: var(--key); }
   function openDetail(id) {
     const g = all.find((x) => x.id === id);
     if (!g) return;
-    $('dShot').src = g.shot || g.icon || '';
+    $('dShot').src = g.shot || '';
     $('dName').textContent = g.name;
     $('dDesc').textContent = g.desc;
     $('dCat').textContent = g.cat;

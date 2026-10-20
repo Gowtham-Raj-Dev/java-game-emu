@@ -13,6 +13,9 @@ android/signing/
 *.jks
 *.keystore
 
+# local JDK / Android SDK / emulator / test JARs (big, machine-specific)
+toolchain/
+
 # tools
 tools/node_modules/
 tools/vmtest/out/
