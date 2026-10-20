@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://javagame-emu.codelove.in/sitemap.xml

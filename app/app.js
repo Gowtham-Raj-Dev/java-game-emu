@@ -600,7 +600,7 @@
   }
 
   // ---------------- free games store ----------------
-  const SITE = 'https://gowtham-raj-dev.github.io/java-game-emu/';
+  const SITE = 'https://javagame-emu.codelove.in/';
   const BASE = (IN_APP || location.protocol === 'file:') ? SITE : '';
   let catalog = null, storeCat = 'All', storeQuery = '', libCount = 0;
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -644,7 +644,6 @@
     $('storeGrid').innerHTML = list.map((g) =>
       '<button class="scard" type="button" data-id="' + esc(g.id) + '">' +
       '<span class="shot">' + (g.shot ? '<img loading="lazy" alt="" src="' + esc(BASE + g.shot) + '">' : '') +
-      (g.icon ? '<img class="ico" loading="lazy" alt="" src="' + esc(BASE + g.icon) + '">' : '') +
       (installed.has(g.id) ? '<span class="got">✓ added</span>' : '') + '</span>' +
       '<span class="nm">' + esc(g.name) + '</span><span class="ct">' + esc(g.cat) + '</span></button>').join('');
     if (!list.length) { msg.hidden = false; msg.textContent = 'No games match that search.'; }
