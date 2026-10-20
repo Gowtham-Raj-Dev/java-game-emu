@@ -600,7 +600,7 @@
   }
 
   // ---------------- free games store ----------------
-  const SITE = 'https://javagames-emu.codelove.in/';
+  const SITE = 'https://javaplay.codelove.in/';
   const BASE = (IN_APP || location.protocol === 'file:') ? SITE : '';
   let catalog = null, storeCat = 'All', storeQuery = '', libCount = 0;
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
