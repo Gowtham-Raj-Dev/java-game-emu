@@ -6,7 +6,10 @@
 <title>JavaPlay Player</title>
 <meta name="description" content="Play J2ME .jar phone games in your browser with JavaPlay. Add a game, play it with the phone keypad, touch or your keyboard, and record gameplay videos.">
 <meta name="theme-color" content="#14161c">
-<link rel="icon" type="image/png" href="assets/keyplay-logo.png">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
 <link rel="stylesheet" href="app/app.css">
 </head>
 <body>
@@ -15,7 +18,7 @@
   <!-- Home: game library -->
   <section id="home" class="home">
     <header class="appbar">
-      <img src="assets/keyplay-logo.png" alt="" width="32" height="32">
+      <img src="assets/javaplay-logo.png" alt="" width="32" height="32">
       <h1>JavaPlay</h1>
       <button class="icon-btn" id="muteBtn" type="button" aria-label="Sound on or off">
         <svg viewBox="0 0 24 24" class="on"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg>
@@ -28,7 +31,7 @@
     </nav>
     <main class="home-body" id="homeBody">
       <div class="empty" id="empty" hidden>
-        <img src="assets/keyplay-logo.png" alt="" width="88" height="88">
+        <img src="assets/javaplay-logo.png" alt="" width="88" height="88">
         <h2>No games yet</h2>
         <p>Pick a free game to start, or add your own <code>.jar</code>. Screen size, rotation and controls are set up automatically.</p>
         <button class="btn primary" id="emptyFree" type="button">Browse free games</button>

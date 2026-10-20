@@ -7,7 +7,7 @@ plugins {
 def webDir = rootProject.file('../web')
 tasks.register('copyWebAssets', Copy) {
     from(webDir) {
-        include 'play.html', 'app/**', 'engine/**', 'assets/keyplay-logo.png'
+        include 'play.html', 'app/**', 'engine/**', 'assets/javaplay-logo.png', 'assets/favicon.svg', 'assets/favicon-32.png'
     }
     into layout.projectDirectory.dir('src/main/assets/web')
 }
