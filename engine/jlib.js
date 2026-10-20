@@ -1120,6 +1120,14 @@
         if ((c & 0xf0) === 0xe0) { const b = readByteFrom(t, o._in), d = readByteFrom(t, o._in); return ((c & 0x0f) << 12) | ((b & 0x3f) << 6) | (d & 0x3f); }
         return c;
       },
+      // true only while bytes remain (games loop on `while (reader.ready())`)
+      'ready()Z': (t, [o]) => {
+        const ins = o._in;
+        if (!ins) return 0;
+        const m = t.vm.findVirtual(ins, 'available()I');
+        const n = m.fn ? m.fn(t, [ins]) : t.vm.invokeSync(m, [ins]);
+        return n > 0;
+      },
       'close()V': () => {},
     },
   });

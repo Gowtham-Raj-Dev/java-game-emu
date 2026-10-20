@@ -1,4 +1,4 @@
-/* KeyPlay player. Home = app bar + game grid + FAB. Player = edge-to-edge: screen on top, keypad below
+/* JavaPlay player. Home = app bar + game grid + FAB. Player = edge-to-edge: screen on top, keypad below
    (landscape: D-pad left, screen centre, numpad right). Written for old Android WebViews too:
    no flex gap / inset / aspect-ratio without fallbacks. */
 :root {
@@ -180,3 +180,44 @@ a { color: var(--accent); }
   .sheet { border-radius: 22px; border-bottom: 1px solid var(--key-edge); }
 }
 @media (prefers-reduced-motion: reduce) { .sheet { animation: none; } .rec-badge .dot { animation: none; } }
+
+/* ---------- tabs + free games store ---------- */
+.tabs { flex: none; display: flex; background: var(--panel); border-bottom: 1px solid #22262f; padding: 0 max(8px, env(safe-area-inset-right, 0px)) 0 max(8px, env(safe-area-inset-left, 0px)); }
+.tab { flex: 1; max-width: 220px; height: 46px; border: 0; background: transparent; color: var(--muted); font-weight: 700; cursor: pointer; position: relative; }
+.tab[aria-selected="true"] { color: var(--fg); }
+.tab[aria-selected="true"]::after { content: ""; position: absolute; left: 22%; right: 22%; bottom: 0; height: 3px; border-radius: 3px 3px 0 0; background: var(--accent); }
+.badge { display: inline-block; min-width: 22px; padding: 1px 6px; margin-left: 4px; border-radius: 999px; background: var(--key); color: var(--muted); font: 600 0.7rem var(--mono); }
+.tab[aria-selected="true"] .badge { background: var(--accent); color: var(--accent-ink); }
+.btn.ghost { background: transparent; border-color: transparent; color: var(--accent); }
+.store-head { max-width: 980px; margin: 0 auto 12px; }
+.store-search { display: flex; align-items: center; height: 46px; padding: 0 14px; border-radius: 14px; background: var(--card); border: 1px solid #282d38; }
+.store-search svg { width: 20px; height: 20px; fill: none; stroke: var(--muted); stroke-width: 2.2; stroke-linecap: round; margin-right: 10px; flex: none; }
+.store-search input { flex: 1; min-width: 0; height: 100%; border: 0; background: transparent; color: var(--fg); font: 500 1rem var(--ui); outline: none; -webkit-user-select: text; user-select: text; }
+.chips { display: flex; overflow-x: auto; padding: 10px 0 2px; scrollbar-width: none; }
+.chips::-webkit-scrollbar { display: none; }
+.chip { flex: none; height: 36px; padding: 0 14px; margin-right: 8px; border-radius: 999px; border: 1px solid #2c3140; background: var(--card); color: var(--muted); font-weight: 600; cursor: pointer; white-space: nowrap; }
+.chip[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
+.store-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+.scard { display: flex; flex-direction: column; background: var(--card); border: 1px solid #282d38; border-radius: 18px; padding: 8px 8px 10px; cursor: pointer; text-align: left; min-width: 0; transition: transform .12s ease; }
+.scard:active { transform: scale(0.97); }
+.shot { position: relative; border-radius: 12px; overflow: hidden; background: #000; border: 3px solid #0b0c10; }
+.shot::before { content: ""; display: block; padding-top: 133.33%; }
+.shot img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; image-rendering: pixelated; }
+.shot .ico { position: absolute; left: 6px; bottom: 6px; width: 30px; height: 30px; top: auto; border-radius: 8px; background: #0b0c10; border: 2px solid rgba(255, 255, 255, 0.14); object-fit: contain; }
+.shot .got { position: absolute; top: 6px; right: 6px; padding: 2px 8px; border-radius: 999px; background: rgba(14, 16, 20, 0.8); color: #7ee2a8; font: 600 0.68rem var(--mono); }
+.scard .nm { font-weight: 700; margin: 9px 2px 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.scard .ct { font: 500 0.72rem var(--mono); color: var(--accent); margin: 0 2px; }
+.store-msg { max-width: 420px; margin: 30px auto; text-align: center; color: var(--muted); }
+.sheet .detail { display: flex; margin-bottom: 14px; }
+.sheet .detail .shot { width: 112px; flex: none; margin-right: 14px; }
+.sheet .detail p { margin: 0 0 8px; color: #c9cfdb; font-size: 0.92rem; }
+.sheet .detail small { color: var(--muted); display: block; line-height: 1.5; }
+.sheet .detail small a { color: var(--accent); }
+.progress { height: 4px; border-radius: 2px; background: var(--key); overflow: hidden; margin: 4px 0 10px; }
+.progress span { display: block; height: 100%; width: 30%; background: var(--accent); animation: load 1s ease-in-out infinite; }
+@keyframes load { from { transform: translateX(-100%); } to { transform: translateX(340%); } }
+
+.card .shot.lib { width: 100%; margin-bottom: 10px; }
+.card .shot.lib img { width: 100%; height: 100%; margin: 0; border-radius: 0; background: #000; }
+.card .shot.lib .ico { width: 30px; height: 30px; border-radius: 8px; }
+

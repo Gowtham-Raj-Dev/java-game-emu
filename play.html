@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-<title>KeyPlay Player</title>
-<meta name="description" content="Play J2ME .jar phone games in your browser with KeyPlay. Add a game, play it with the phone keypad, touch or your keyboard, and record gameplay videos.">
+<title>JavaPlay Player</title>
+<meta name="description" content="Play J2ME .jar phone games in your browser with JavaPlay. Add a game, play it with the phone keypad, touch or your keyboard, and record gameplay videos.">
 <meta name="theme-color" content="#14161c">
 <link rel="icon" type="image/png" href="assets/keyplay-logo.png">
 <link rel="stylesheet" href="app/app.css">
@@ -16,22 +16,38 @@
   <section id="home" class="home">
     <header class="appbar">
       <img src="assets/keyplay-logo.png" alt="" width="32" height="32">
-      <h1>KeyPlay</h1>
+      <h1>JavaPlay</h1>
       <button class="icon-btn" id="muteBtn" type="button" aria-label="Sound on or off">
         <svg viewBox="0 0 24 24" class="on"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg>
         <svg viewBox="0 0 24 24" class="off"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M17 9l5 6M22 9l-5 6"/></svg>
       </button>
     </header>
+    <nav class="tabs" role="tablist" aria-label="Library">
+      <button class="tab" id="tabMine" type="button" role="tab" aria-selected="true">My games</button>
+      <button class="tab" id="tabFree" type="button" role="tab" aria-selected="false">Free games <span class="badge" id="freeCount"></span></button>
+    </nav>
     <main class="home-body" id="homeBody">
       <div class="empty" id="empty" hidden>
         <img src="assets/keyplay-logo.png" alt="" width="88" height="88">
         <h2>No games yet</h2>
-        <p>Download a Java game (<code>.jar</code>) and add it here. Screen size, rotation and controls are set up automatically.</p>
-        <label class="btn primary" for="jarInput">Add a game</label>
-        <a class="btn" href="https://mobile.phoneky.com/games/" target="_blank" rel="noopener">Find games on PHONEKY</a>
+        <p>Pick a free game to start, or add your own <code>.jar</code>. Screen size, rotation and controls are set up automatically.</p>
+        <button class="btn primary" id="emptyFree" type="button">Browse free games</button>
+        <label class="btn" for="jarInput">Add a .jar file</label>
+        <a class="btn ghost" href="https://mobile.phoneky.com/games/" target="_blank" rel="noopener">More games on PHONEKY</a>
       </div>
       <div class="grid" id="gameGrid"></div>
       <p class="home-note" id="homeNote" hidden></p>
+    </main>
+    <main class="home-body store" id="storeBody" hidden>
+      <div class="store-head">
+        <label class="store-search" for="storeQ">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input id="storeQ" type="search" placeholder="Search free games" autocomplete="off">
+        </label>
+        <div class="chips" id="storeChips" role="toolbar" aria-label="Categories"></div>
+      </div>
+      <div class="grid store-grid" id="storeGrid"></div>
+      <p class="store-msg" id="storeMsg" hidden></p>
     </main>
     <label class="fab" for="jarInput" id="fab" aria-label="Add a game"><span>+</span></label>
     <input type="file" id="jarInput" accept=".jar,.jad,application/java-archive,application/x-java-archive,application/octet-stream" multiple>

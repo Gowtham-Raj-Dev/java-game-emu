@@ -1,4 +1,4 @@
-/* KeyPlay engine – Java bytecode VM: class loading, interpreter, green threads, monitors, exceptions. */
+/* JavaPlay engine – Java bytecode VM: class loading, interpreter, green threads, monitors, exceptions. */
 (function (KP) {
   'use strict';
 
@@ -186,7 +186,7 @@
       this.jar = opts.jar;
       this.props = opts.props || {};
       this.sysProps = Object.assign({
-        'microedition.platform': 'KeyPlay', 'microedition.encoding': 'ISO-8859-1', 'microedition.configuration': 'CLDC-1.1',
+        'microedition.platform': 'JavaPlay', 'microedition.encoding': 'ISO-8859-1', 'microedition.configuration': 'CLDC-1.1',
         'microedition.profiles': 'MIDP-2.0', 'microedition.locale': 'en-US', 'microedition.media.version': '1.1',
         'supports.mixing': 'true', 'supports.audio.capture': 'false', 'supports.video.capture': 'false',
         'com.nokia.mid.ui.version': '1.1',

@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Free Java Games – JavaPlay</title>
+<meta name="description" content="Free J2ME Java phone games you can play right in your browser or in the JavaPlay Android app. Open-source and freely licensed games, no sign-up.">
+<meta name="theme-color" content="#101217">
+<link rel="icon" type="image/png" href="assets/keyplay-logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: sticky header + search/filter bar, responsive card grid of "phone screen" thumbnails, detail sheet */
+:root {
+  --bg: #0f1116;
+  --surface: #181b23;
+  --surface-2: #222631;
+  --line: #2c3140;
+  --fg: #eef0f4;
+  --muted: #98a0b2;
+  --key: #ff8a1f;
+  --key-ink: #1a1206;
+  --display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body: "Figtree", "Segoe UI", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 400 1rem/1.55 var(--body); -webkit-font-smoothing: antialiased; }
+img { display: block; max-width: 100%; }
+a { color: var(--key); }
+:focus-visible { outline: 2px solid var(--key); outline-offset: 3px; border-radius: 8px; }
+.wrap { max-width: 1180px; margin: 0 auto; padding-left: max(18px, env(safe-area-inset-left, 0px)); padding-right: max(18px, env(safe-area-inset-right, 0px)); }
+
+.top { position: sticky; top: 0; z-index: 10; background: rgba(15, 17, 22, 0.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); padding-top: env(safe-area-inset-top, 0px); }
+.top .wrap { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 12px; }
+.brand { display: flex; align-items: center; gap: 10px; color: var(--fg); text-decoration: none; font: 800 1.2rem var(--display); }
+.brand img { width: 32px; height: 32px; }
+.top nav { display: flex; gap: 10px; align-items: center; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 18px; border-radius: 999px; font: 700 0.95rem var(--body); text-decoration: none; border: 1px solid var(--line); color: var(--fg); background: var(--surface-2); cursor: pointer; transition: transform .12s ease, background .12s ease; }
+.btn:hover { background: var(--line); }
+.btn:active { transform: scale(0.97); }
+.btn.primary { background: var(--key); color: var(--key-ink); border-color: transparent; }
+.btn.primary:hover { background: #ffa04a; }
+.btn svg { width: 17px; height: 17px; }
+
+.hero { padding-block: 40px 18px; }
+.hero .eyebrow { font: 600 0.75rem var(--mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--key); margin: 0 0 10px; }
+.hero h1 { font: 800 clamp(2.1rem, 5vw, 3.4rem)/1.04 var(--display); letter-spacing: -0.02em; margin: 0 0 12px; text-wrap: balance; }
+.hero h1 .count { color: var(--key); }
+.hero p { color: var(--muted); max-width: 62ch; margin: 0; }
+
+.filters { position: sticky; top: calc(57px + env(safe-area-inset-top, 0px)); z-index: 9; background: linear-gradient(var(--bg) 85%, transparent); padding-block: 14px 18px; }
+.search { display: flex; align-items: center; gap: 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 0 14px; height: 50px; max-width: 520px; }
+.search svg { width: 20px; height: 20px; color: var(--muted); flex: none; }
+.search input { flex: 1; min-width: 0; background: transparent; border: 0; color: var(--fg); font: 500 1rem var(--body); outline: none; }
+.chips { display: flex; gap: 8px; overflow-x: auto; margin-top: 12px; padding-bottom: 4px; scrollbar-width: none; }
+.chips::-webkit-scrollbar { display: none; }
+.chip { flex: none; padding: 8px 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--muted); font: 600 0.88rem var(--body); cursor: pointer; white-space: nowrap; }
+.chip b { font: 500 0.75rem var(--mono); margin-left: 6px; opacity: 0.8; }
+.chip[aria-pressed="true"] { background: var(--key); color: var(--key-ink); border-color: transparent; }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(178px, 1fr)); gap: 16px; padding-bottom: 40px; }
+.card { position: relative; background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 10px 10px 12px; display: flex; flex-direction: column; cursor: pointer; transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease; min-width: 0; }
+.card:hover { transform: translateY(-3px); border-color: #3b4252; box-shadow: 0 14px 30px -18px rgba(255, 138, 31, 0.45); }
+.screen { position: relative; border-radius: 13px; overflow: hidden; background: #000; border: 4px solid #0b0c10; box-shadow: inset 0 0 0 1px #2c3140; }
+.screen::before { content: ""; display: block; padding-top: 133.33%; }
+.screen img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; image-rendering: pixelated; }
+.screen .ico { position: absolute; left: 8px; bottom: 8px; top: auto; width: 36px; height: 36px; border-radius: 9px; background: #0b0c10; border: 2px solid rgba(255, 255, 255, 0.12); image-rendering: pixelated; object-fit: contain; }
+.card h3 { font: 700 1rem/1.25 var(--body); margin: 12px 4px 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.card .meta { display: flex; justify-content: space-between; align-items: center; margin: 0 4px 10px; font: 500 0.75rem var(--mono); color: var(--muted); }
+.card .cat { color: var(--key); }
+.card .acts { display: flex; gap: 8px; margin-top: auto; }
+.card .acts .btn { flex: 1; padding: 9px 10px; }
+.card .acts .btn.dl { flex: none; width: 42px; padding: 0; }
+.empty { color: var(--muted); padding: 40px 0; text-align: center; }
+
+.credit { color: var(--muted); font-size: 0.88rem; border-top: 1px solid var(--line); padding-block: 26px calc(30px + env(safe-area-inset-bottom, 0px)); }
+
+/* detail sheet */
+.modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 30; background: rgba(5, 6, 9, 0.7); display: flex; align-items: center; justify-content: center; padding: 16px; }
+.modal[hidden] { display: none; }
+.sheet { width: min(760px, 100%); max-height: 92vh; overflow: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 24px; display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 22px; padding: 20px; position: relative; }
+.sheet .screen { align-self: start; }
+.sheet h2 { font: 800 1.7rem/1.1 var(--display); margin: 4px 0 8px; }
+.sheet .desc { color: #c9cfdb; margin: 0 0 14px; }
+.sheet dl { margin: 0 0 18px; display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; font-size: 0.9rem; }
+.sheet dt { color: var(--muted); }
+.sheet dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.sheet .acts { display: flex; flex-wrap: wrap; gap: 10px; }
+.close { position: absolute; top: 10px; right: 10px; width: 40px; height: 40px; border-radius: 50%; border: 0; background: var(--surface-2); color: var(--fg); font-size: 1.3rem; cursor: pointer; }
+@media (max-width: 640px) {
+  .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .card { padding: 8px 8px 10px; border-radius: 18px; }
+  .card .acts .btn.dl { display: none; }
+  .sheet { grid-template-columns: minmax(0, 1fr); }
+  .sheet .screen { max-width: 220px; justify-self: center; width: 100%; }
+  .top nav .hide-sm { display: none; }
+  .modal { align-items: flex-end; padding: 0; }
+  .sheet { border-radius: 24px 24px 0 0; max-height: 90vh; padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px)); }
+}
+@media (prefers-reduced-motion: reduce) { .card, .btn { transition: none; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="index.html"><img src="assets/keyplay-logo.png" alt="" width="32" height="32">JavaPlay</a>
+    <nav>
+      <a class="btn hide-sm" href="index.html#how">How it works</a>
+      <a class="btn primary" href="download/JavaPlay.apk" download>Get the app</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <p class="eyebrow">Free games library</p>
+    <h1><span class="count" id="count">100+</span> free Java games, ready to play</h1>
+    <p>Every game here is free and openly licensed, so we can host it for you. Tap Play to start in your browser, or download the <code>.jar</code> and open it in the JavaPlay app.</p>
+  </section>
+
+  <div class="filters">
+    <label class="search" for="q">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="Search games" autocomplete="off" aria-label="Search games">
+    </label>
+    <div class="chips" id="chips" role="toolbar" aria-label="Categories"></div>
+  </div>
+
+  <div class="grid" id="grid" aria-live="polite"></div>
+  <p class="empty" id="empty" hidden>No games match that search.</p>
+</main>
+
+<footer class="credit">
+  <div class="wrap">Games are by their authors and shared under the license shown on each game. Open a game to see its author, license and source code. <a href="index.html">Back to JavaPlay</a></div>
+</footer>
+
+<div class="modal" id="modal" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="dName">
+    <button class="close" id="close" type="button" aria-label="Close">×</button>
+    <div class="screen"><img id="dShot" alt=""></div>
+    <div>
+      <h2 id="dName"></h2>
+      <p class="desc" id="dDesc"></p>
+      <dl>
+        <dt>Category</dt><dd id="dCat"></dd>
+        <dt>Controls</dt><dd id="dCtl"></dd>
+        <dt>Size</dt><dd id="dSize"></dd>
+        <dt>Author</dt><dd id="dAuthor"></dd>
+        <dt>License</dt><dd id="dLic"></dd>
+        <dt>Source</dt><dd><a id="dSrc" target="_blank" rel="noopener">View source code ↗</a></dd>
+      </dl>
+      <div class="acts">
+        <a class="btn primary" id="dPlay">▶ Play in browser</a>
+        <a class="btn" id="dDl" download>Download .jar</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  const $ = (id) => document.getElementById(id);
+  let all = [], cat = 'All', q = '';
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+  function render() {
+    const words = q.toLowerCase().split(/\s+/).filter(Boolean);
+    const list = all.filter((g) => (cat === 'All' || g.cat === cat) && words.every((w) => (g.name + ' ' + g.cat + ' ' + g.desc).toLowerCase().includes(w)));
+    $('grid').innerHTML = list.map((g) =>
+      '<article class="card" tabindex="0" data-id="' + esc(g.id) + '" aria-label="' + esc(g.name) + '">' +
+      '<div class="screen">' + (g.shot ? '<img loading="lazy" alt="" src="' + esc(g.shot) + '">' : '') + (g.icon ? '<img class="ico" loading="lazy" alt="" src="' + esc(g.icon) + '">' : '') + '</div>' +
+      '<h3>' + esc(g.name) + '</h3>' +
+      '<div class="meta"><span class="cat">' + esc(g.cat) + '</span><span>' + g.kb + ' KB</span></div>' +
+      '<div class="acts"><a class="btn primary" href="play.html?game=' + encodeURIComponent(g.id) + '">▶ Play</a>' +
+      '<a class="btn dl" href="' + esc(g.jar) + '" download aria-label="Download ' + esc(g.name) + ' .jar">⬇</a></div>' +
+      '</article>').join('');
+    $('empty').hidden = list.length > 0;
+  }
+
+  function chips(cats) {
+    const names = ['All'].concat(Object.keys(cats).sort());
+    $('chips').innerHTML = names.map((c) => '<button class="chip" type="button" aria-pressed="' + (c === cat) + '" data-cat="' + esc(c) + '">' + esc(c) + '<b>' + (c === 'All' ? all.length : cats[c]) + '</b></button>').join('');
+  }
+
+  function openDetail(id) {
+    const g = all.find((x) => x.id === id);
+    if (!g) return;
+    $('dShot').src = g.shot || g.icon || '';
+    $('dName').textContent = g.name;
+    $('dDesc').textContent = g.desc;
+    $('dCat').textContent = g.cat;
+    $('dCtl').textContent = g.controls === 'touch' ? 'Touch' : 'Phone keypad (works with keyboard too)';
+    $('dSize').textContent = g.kb + ' KB' + (g.size ? ' · ' + g.size.replace('x', '×') + ' screen' : '');
+    $('dAuthor').textContent = g.author;
+    $('dLic').textContent = g.license;
+    $('dSrc').href = g.source;
+    $('dPlay').href = 'play.html?game=' + encodeURIComponent(g.id);
+    $('dDl').href = g.jar;
+    $('modal').hidden = false;
+    $('close').focus();
+  }
+  const close = () => { $('modal').hidden = true; };
+
+  $('grid').addEventListener('click', (e) => {
+    if (e.target.closest('a')) return;
+    const card = e.target.closest('.card');
+    if (card) openDetail(card.dataset.id);
+  });
+  $('grid').addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.target.classList.contains('card')) openDetail(e.target.dataset.id); });
+  $('chips').addEventListener('click', (e) => {
+    const b = e.target.closest('.chip');
+    if (!b) return;
+    cat = b.dataset.cat;
+    document.querySelectorAll('.chip').forEach((c) => c.setAttribute('aria-pressed', String(c === b)));
+    render();
+  });
+  $('q').addEventListener('input', (e) => { q = e.target.value; render(); });
+  $('close').addEventListener('click', close);
+  $('modal').addEventListener('click', (e) => { if (e.target === $('modal')) close(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+
+  fetch('games/catalog.json').then((r) => r.json()).then((data) => {
+    all = data.games;
+    $('count').textContent = data.count;
+    chips(data.categories);
+    render();
+    const id = location.hash.replace('#', '');
+    if (id) openDetail(id);
+  }).catch(() => { $('empty').hidden = false; $('empty').textContent = 'Could not load the game list. Check your connection and reload.'; });
+})();
+</script>
+</body>
+</html>
