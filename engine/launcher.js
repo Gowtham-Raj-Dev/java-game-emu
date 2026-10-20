@@ -46,14 +46,49 @@
       for (const [k, s] of score) if (s > bestScore) { best = k; bestScore = s; }
       if (best) { found = best.split('x').map(Number); out.reason = 'images'; }
     }
+    if (!found) {
+      // games often hard-code their screen size: count sipush constants in the bytecode
+      const best = bytecodeSize(jar);
+      if (best) { found = best; out.reason = 'bytecode'; }
+    }
     if (found) { out.w = found[0]; out.h = found[1]; }
+    // Gameloft WVGA (480x800) builds draw landscape turned 90°: show them turned back
+    const vendor = (props['MIDlet-Vendor'] || '').toLowerCase();
+    out.rotate = 0;
+    if (out.w === 480 && out.h === 800 && vendor.indexOf('gameloft') >= 0) out.rotate = 270;
     const orient = (props['Nokia-MIDlet-App-Orientation'] || props['MIDlet-Orientation'] || '').toLowerCase();
     if (orient === 'landscape' && out.w < out.h) { const t = out.w; out.w = out.h; out.h = t; }
     out.landscape = out.w > out.h;
+    if (out.rotate) out.landscape = !out.landscape;
+    // big touch-era screens are usually touch games
+    if (out.w * out.h >= 360 * 640) out.touch = true;
     const touchProp = (props['MIDlet-Touch-Support'] || '').toLowerCase() === 'true' || (props['Nokia-MIDlet-On-Screen-Keypad'] || '').toLowerCase() === 'no';
-    out.touch = touchProp;
+    out.touch = out.touch || touchProp;
     return out;
   };
+
+  const PAIRS = [[128, 128], [128, 160], [176, 208], [176, 220], [240, 320], [240, 400], [352, 416], [360, 640], [480, 800]];
+  function bytecodeSize(jar) {
+    const count = {};
+    for (const n of jar.names()) {
+      if (!n.endsWith('.class')) continue;
+      let cf;
+      try { cf = KP.parseClass(jar.get(n)); } catch (e) { continue; }
+      for (const m of cf.methods) {
+        if (!m.code) continue;
+        const c = m.code.code;
+        for (let i = 0; i + 2 < c.length; i++) {
+          if (c[i] === 0x11) { const v = (c[i + 1] << 8) | c[i + 2]; if (v >= 128 && v <= 800) count[v] = (count[v] || 0) + 1; }
+        }
+      }
+    }
+    let best = null;
+    for (const [w, h] of PAIRS) {
+      if ((count[w] || 0) >= 8 && (count[h] || 0) >= 8) best = [w, h]; // largest pair that the code really uses
+    }
+    return best;
+  }
+  KP.bytecodeSize = bytecodeSize;
 
   class Emulator {
     constructor(opts) {

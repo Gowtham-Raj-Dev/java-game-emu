@@ -1,13 +1,14 @@
-/* KeyPlay player UI – game library, engine host, keypad / keyboard / touch input, recording. */
+/* KeyPlay player UI – game library, engine host, keypad / keyboard / touch input, rotation, recording. */
 (function () {
   'use strict';
   const KP = window.KP;
   const $ = (id) => document.getElementById(id);
   const Bridge = window.KeyPlayAndroid || null; // present inside the Android app
+  const IN_APP = !!Bridge;
 
   // ---------------- IndexedDB game library ----------------
   const DB = {
-    db: null,
+    db: null, mem: null,
     open() {
       return new Promise((resolve) => {
         if (!window.indexedDB) { resolve(null); return; }
@@ -17,11 +18,11 @@
         req.onerror = () => resolve(null);
       });
     },
-    tx(mode) { return DB.db.transaction('games', mode).objectStore('games'); },
+    store(mode) { return DB.db.transaction('games', mode).objectStore('games'); },
     all() {
       return new Promise((resolve) => {
         if (!DB.db) { resolve(DB.mem ? Object.values(DB.mem) : []); return; }
-        const r = DB.tx('readonly').getAll();
+        const r = DB.store('readonly').getAll();
         r.onsuccess = () => resolve(r.result || []);
         r.onerror = () => resolve([]);
       });
@@ -29,14 +30,14 @@
     put(rec) {
       return new Promise((resolve) => {
         if (!DB.db) { (DB.mem = DB.mem || {})[rec.id] = rec; resolve(); return; }
-        const r = DB.tx('readwrite').put(rec);
+        const r = DB.store('readwrite').put(rec);
         r.onsuccess = () => resolve(); r.onerror = () => resolve();
       });
     },
     del(id) {
       return new Promise((resolve) => {
         if (!DB.db) { if (DB.mem) delete DB.mem[id]; resolve(); return; }
-        const r = DB.tx('readwrite').delete(id);
+        const r = DB.store('readwrite').delete(id);
         r.onsuccess = () => resolve(); r.onerror = () => resolve();
       });
     },
@@ -70,8 +71,8 @@
     try {
       jar = new KP.Jar(bytes);
       props = KP.parseManifest(jar.text('META-INF/MANIFEST.MF') || '');
-    } catch (e) { toastLib('“' + fileName + '” is not a valid .jar file.'); return null; }
-    if (!props['MIDlet-1'] && !jar.names().some((n) => n.endsWith('.class'))) { toastLib('“' + fileName + '” has no Java game inside.'); return null; }
+    } catch (e) { note('“' + fileName + '” is not a valid .jar file.'); return null; }
+    if (!props['MIDlet-1'] && !jar.names().some((n) => n.endsWith('.class'))) { note('“' + fileName + '” has no Java game inside.'); return null; }
     const profile = KP.detectProfile(jar, props, fileName);
     const rec = {
       id: fnvHash(bytes),
@@ -79,7 +80,7 @@
       vendor: props['MIDlet-Vendor'] || '',
       fileName,
       icon: iconDataUrl(jar, props),
-      w: profile.w, h: profile.h, touch: profile.touch,
+      w: profile.w, h: profile.h, touch: profile.touch, rotate: profile.rotate || 0,
       added: Date.now(),
       jar: bytes,
     };
@@ -88,39 +89,61 @@
   }
 
   async function handleFiles(files) {
-    let last = null;
+    let last = null, added = 0;
     for (const f of files) {
-      if (!/\.jar$/i.test(f.name)) { if (/\.jad$/i.test(f.name)) toastLib('Pick the .jar file, not the .jad. The .jar has the game.'); continue; }
+      if (!/\.jar$/i.test(f.name) && !(f.type || '').includes('java')) {
+        if (/\.jad$/i.test(f.name)) note('Pick the .jar file, not the .jad. The .jar has the game.');
+        else note('“' + f.name + '” is not a .jar game.');
+        continue;
+      }
       const buf = new Uint8Array(await f.arrayBuffer());
-      last = await addJarBytes(f.name, buf) || last;
+      const rec = await addJarBytes(f.name, buf);
+      if (rec) { last = rec; added++; }
     }
     await renderLibrary();
-    if (last && files.length === 1) startGame(last);
+    if (last && added === 1) startGame(last);
   }
 
-  let libToastTimer = null;
-  function toastLib(msg) {
-    let el = $('libToast');
-    if (!el) { el = document.createElement('p'); el.id = 'libToast'; el.className = 'lib-note'; el.style.color = 'var(--accent)'; $('library').insertBefore(el, $('gameGrid')); }
-    el.textContent = msg;
-    clearTimeout(libToastTimer);
-    libToastTimer = setTimeout(() => el.remove(), 5000);
+  let noteTimer = null;
+  function note(msg) {
+    const el = $('homeNote');
+    el.textContent = msg; el.hidden = false;
+    clearTimeout(noteTimer);
+    noteTimer = setTimeout(() => { el.hidden = true; }, 6000);
+  }
+
+  // effective profile of a stored game (user overrides win)
+  function profileOf(rec) {
+    const o = rec.override || {};
+    const w = o.w || rec.w, h = o.h || rec.h;
+    const rotate = o.rotate !== undefined ? o.rotate : (rec.rotate || 0);
+    const touch = o.touch !== undefined ? o.touch : !!rec.touch;
+    return { w, h, rotate, touch, landscape: rotate ? w < h : w > h };
   }
 
   async function renderLibrary() {
     const list = (await DB.all()).sort((a, b) => (b.played || b.added) - (a.played || a.added));
     const grid = $('gameGrid');
-    grid.querySelectorAll('.card').forEach((c) => c.remove());
+    grid.innerHTML = '';
+    $('empty').hidden = list.length > 0;
+    $('fab').hidden = list.length === 0;
     for (const g of list) {
+      const p = profileOf(g);
       const card = document.createElement('div');
       card.className = 'card'; card.tabIndex = 0; card.setAttribute('role', 'button');
       card.setAttribute('aria-label', 'Play ' + g.name);
-      const icon = g.icon ? '<img alt="" src="' + g.icon + '">' : '<span class="noicon">' + (g.name[0] || '?').toUpperCase() + '</span>';
-      card.innerHTML = icon + '<span class="name"></span><span class="meta"></span><button class="del" type="button" aria-label="Remove game">×</button>';
+      card.innerHTML = (g.icon ? '<img alt="" src="' + g.icon + '">' : '<span class="noicon"></span>') +
+        '<span class="name"></span><span class="meta"></span><button class="more" type="button" aria-label="Game options">⋮</button>';
+      if (!g.icon) card.querySelector('.noicon').textContent = (g.name[0] || '?').toUpperCase();
       card.querySelector('.name').textContent = g.name;
-      card.querySelector('.meta').textContent = g.w + '×' + g.h + (g.touch ? ' · touch' : '') + (g.vendor ? ' · ' + g.vendor : '');
+      card.querySelector('.meta').textContent = p.w + '×' + p.h + (p.rotate ? ' · turned' : '') + (p.touch ? ' · touch' : '');
+      let pressTimer = null, longPressed = false;
+      card.addEventListener('pointerdown', () => { longPressed = false; pressTimer = setTimeout(() => { longPressed = true; gameOptions(g); }, 550); });
+      ['pointerup', 'pointerleave', 'pointercancel'].forEach((ev) => card.addEventListener(ev, () => clearTimeout(pressTimer)));
+      card.addEventListener('contextmenu', (e) => e.preventDefault());
       card.addEventListener('click', (e) => {
-        if (e.target.classList.contains('del')) { e.stopPropagation(); confirmDelete(g); return; }
+        if (longPressed) return;
+        if (e.target.classList.contains('more')) { e.stopPropagation(); gameOptions(g); return; }
         startGame(g);
       });
       card.addEventListener('keydown', (e) => { if (e.key === 'Enter') startGame(g); });
@@ -128,50 +151,60 @@
     }
   }
 
+  function gameOptions(g) {
+    sheet(g.name, (body, close) => {
+      body.appendChild(opt('▶', 'Play', () => { close(); startGame(g); }));
+      body.appendChild(opt('🗑', 'Remove game', () => { close(); confirmDelete(g); }, 'danger'));
+    });
+  }
+
   function confirmDelete(g) {
     sheet('Remove “' + g.name + '”?', (body, close) => {
       const p = document.createElement('p'); p.className = 'info'; p.textContent = 'The game and its saved progress are removed from this device.'; body.appendChild(p);
       const row = document.createElement('div'); row.className = 'row';
-      row.append(btn('Cancel', () => close()), btn('Remove', async () => {
+      row.append(opt('', 'Cancel', () => close()), opt('', 'Remove', async () => {
         close();
         await DB.del(g.id);
         try { Object.keys(localStorage).filter((k) => k.startsWith('kp:' + g.id + ':')).forEach((k) => localStorage.removeItem(k)); } catch (e) { /* storage blocked */ }
         renderLibrary();
-      }, true));
+      }, 'primary'));
       body.appendChild(row);
     });
   }
 
-  // ---------------- modal sheet ----------------
-  function btn(label, fn, primary) {
+  // ---------------- bottom sheet ----------------
+  function opt(icon, label, fn, cls, value) {
     const b = document.createElement('button');
-    b.type = 'button'; b.className = 'opt' + (primary ? ' primary' : ''); b.textContent = label;
+    b.type = 'button'; b.className = 'opt' + (cls ? ' ' + cls : '');
+    if (icon) { const i = document.createElement('span'); i.className = 'ico'; i.textContent = icon; b.appendChild(i); }
+    const l = document.createElement('span'); l.textContent = label; b.appendChild(l);
+    if (value !== undefined) { const v = document.createElement('span'); v.className = 'val'; v.textContent = value; b.appendChild(v); }
     b.addEventListener('click', fn);
     return b;
   }
-  let sheetOpen = null;
+  let closeSheet = null;
   function sheet(title, build, onClose) {
+    if (closeSheet) closeSheet(true);
     const modal = $('modal'), body = $('modalBody');
     $('modalTitle').textContent = title;
     body.innerHTML = '';
     let closed = false;
-    const close = () => {
+    const close = (replaced) => {
       if (closed) return; closed = true;
-      modal.hidden = true; sheetOpen = null;
-      if (onClose) onClose();
-      if (!$('player').hidden) $('screen').focus({ preventScroll: true });
+      modal.hidden = true; closeSheet = null;
+      if (onClose && !replaced) onClose();
+      if (!$('player').hidden) display.focus({ preventScroll: true });
     };
-    sheetOpen = close;
+    closeSheet = close;
     build(body, close);
     modal.hidden = false;
-    const first = body.querySelector('textarea, input, .opt');
+    const first = body.querySelector('textarea');
     if (first) first.focus();
-    return close;
   }
-  $('modal').addEventListener('click', (e) => { if (e.target === $('modal') && sheetOpen) sheetOpen(); });
+  $('modal').addEventListener('click', (e) => { if (e.target === $('modal') && closeSheet) closeSheet(); });
 
   // ---------------- player ----------------
-  let emu = null, current = null, dirty = false, paused = false, userPaused = false;
+  let emu = null, current = null, prof = null, dirty = false, paused = false, menuOpen = false;
   const display = $('screen');
   const dctx = display.getContext('2d');
 
@@ -185,21 +218,31 @@
     };
   }
 
+  function applyLayout() {
+    const dev = $('device');
+    dev.classList.toggle('landscape', prof.landscape);
+    dev.classList.toggle('portrait', !prof.landscape);
+    const hideKeys = current.keypad === undefined ? prof.touch : !current.keypad;
+    dev.classList.toggle('nokeys', hideKeys);
+    $('player').classList.toggle('immersive', hideKeys && IN_APP);
+    if (Bridge && Bridge.setOrientation) Bridge.setOrientation(prof.landscape ? 'landscape' : 'portrait');
+    if (Bridge && Bridge.setFullscreen) Bridge.setFullscreen(true);
+    resizeDisplay();
+  }
+
   function startGame(rec) {
     stopGame();
     current = rec;
     rec.played = Date.now();
     DB.put(rec);
-    $('library').hidden = true;
+    prof = profileOf(rec);
+    $('home').hidden = true;
     $('player').hidden = false;
-    $('gameTitle').textContent = rec.name;
-    $('keypadBtn').hidden = false;
-    $('recBtn').hidden = !(window.MediaRecorder && display.captureStream);
     try {
       emu = new KP.Emulator({
         jarBytes: rec.jar,
         fileName: rec.fileName,
-        profile: rec.override || null,
+        profile: { w: prof.w, h: prof.h, touch: prof.touch, landscape: prof.landscape, rotate: prof.rotate },
         host: {
           present: () => { dirty = true; },
           storage: storageFor(rec.id),
@@ -221,17 +264,15 @@
       return;
     }
     window.KPDebug = { emu };
-    const p = emu.profile;
-    const dev = $('device');
-    dev.classList.toggle('landscape', p.landscape);
-    dev.classList.toggle('portrait', !p.landscape);
-    dev.classList.toggle('nokeys', !!p.touch && !rec.forceKeys);
     $('softL').textContent = ''; $('softR').textContent = '';
-    if (Bridge && Bridge.setOrientation) Bridge.setOrientation(p.landscape ? 'landscape' : 'portrait');
-    resizeDisplay();
+    applyLayout();
     emu.start();
-    paused = false; userPaused = false;
+    paused = false; menuOpen = false;
     display.focus({ preventScroll: true });
+    if (!localStorage.getItem('kp:menuHint')) {
+      toast(prof.touch ? 'Tap ☰ for the game menu' : '☰ key opens the game menu', 3500);
+      try { localStorage.setItem('kp:menuHint', '1'); } catch (e) { /* ignore */ }
+    }
   }
 
   function stopGame() {
@@ -244,30 +285,28 @@
     stopGame();
     current = null;
     $('player').hidden = true;
-    $('library').hidden = false;
-    $('gameTitle').textContent = '';
-    $('keypadBtn').hidden = true;
-    $('recBtn').hidden = true;
+    $('home').hidden = false;
     if (Bridge && Bridge.setOrientation) Bridge.setOrientation('auto');
+    if (Bridge && Bridge.setFullscreen) Bridge.setFullscreen(false);
     renderLibrary();
   }
 
   function pauseEmu() { if (emu && !paused) { emu.pause(); paused = true; } }
   function resumeEmu() { if (emu && paused) { emu.resume(); paused = false; } }
 
-  // crisp integer scaling of the phone screen
+  // render size: crisp integer scale; at least ~720 px for good videos, capped for phone performance
   let scale = 1;
   function resizeDisplay() {
     if (!emu) return;
-    const { w, h } = emu.profile;
+    const w = prof.w, h = prof.h;
+    const dw = prof.rotate ? h : w, dh = prof.rotate ? w : h;
     const wrap = $('screenWrap');
     const dpr = window.devicePixelRatio || 1;
-    const fit = Math.min(wrap.clientWidth * dpr / w, wrap.clientHeight * dpr / h);
-    // at least 3x internally so recorded videos stay sharp (CSS scales it down on small screens)
-    scale = Math.max(3, Math.min(8, Math.floor(fit) || 1));
-    if (display.width !== w * scale || display.height !== h * scale) {
-      display.width = w * scale; display.height = h * scale;
-    }
+    const fit = Math.floor(Math.min(wrap.clientWidth * dpr / dw, wrap.clientHeight * dpr / dh)) || 1;
+    const minForVideo = Math.ceil(720 / Math.max(dw, dh));
+    scale = Math.max(1, fit, minForVideo);
+    while (scale > 1 && dw * dh * scale * scale > 3200000) scale--;
+    if (display.width !== dw * scale || display.height !== dh * scale) { display.width = dw * scale; display.height = dh * scale; }
     dctx.imageSmoothingEnabled = false;
     dirty = true;
   }
@@ -278,8 +317,11 @@
     if (emu && (dirty || recorder)) {
       dirty = false;
       const src = emu.host.screen.canvas;
+      const s = scale;
       dctx.imageSmoothingEnabled = false;
-      dctx.drawImage(src, 0, 0, display.width, display.height);
+      if (prof.rotate === 270) { dctx.setTransform(0, -s, s, 0, 0, prof.w * s); dctx.drawImage(src, 0, 0); dctx.setTransform(1, 0, 0, 1, 0, 0); }
+      else if (prof.rotate === 90) { dctx.setTransform(0, s, -s, 0, prof.h * s, 0); dctx.drawImage(src, 0, 0); dctx.setTransform(1, 0, 0, 1, 0, 0); }
+      else dctx.drawImage(src, 0, 0, display.width, display.height);
     }
     requestAnimationFrame(frame);
   }
@@ -296,7 +338,7 @@
   // ---------------- input ----------------
   const active = new Map(); // code -> {count, timer}
   function press(code) {
-    if (!emu) return;
+    if (!emu || menuOpen) return;
     KP.audio.unlock();
     const a = active.get(code);
     if (a) { a.count++; return; }
@@ -315,36 +357,34 @@
     if (emu) emu.keyUp(code);
     markKey(code, false);
   }
-  function releaseAll() { for (const code of Array.from(active.keys())) { const a = active.get(code); a.count = 1; release(code); } }
+  function releaseAll() { for (const code of Array.from(active.keys())) { active.get(code).count = 1; release(code); } }
   function markKey(code, on) {
-    document.querySelectorAll('.k[data-key="' + code + '"], .ok[data-key="' + code + '"]').forEach((el) => el.classList.toggle('down', on));
-    const dp = $('dpad');
+    document.querySelectorAll('[data-key="' + code + '"]').forEach((el) => el.classList.toggle('down', on));
     const dir = { '-1': 'up', '-2': 'down', '-3': 'left', '-4': 'right' }[code];
-    if (dir) dp.classList.toggle(dir, on);
+    if (dir) $('dpad').classList.toggle(dir, on);
   }
   function haptic() { if (Bridge && Bridge.vibrate) Bridge.vibrate(12); else if (navigator.vibrate) navigator.vibrate(8); }
 
-  // keypad buttons
   document.querySelectorAll('.k[data-key], .ok[data-key]').forEach((el) => {
     const code = +el.dataset.key;
-    el.addEventListener('pointerdown', (e) => { e.preventDefault(); e.stopPropagation(); el.setPointerCapture(e.pointerId); haptic(); press(code); });
+    el.addEventListener('pointerdown', (e) => { e.preventDefault(); e.stopPropagation(); try { el.setPointerCapture(e.pointerId); } catch (x) { /* ignore */ } haptic(); press(code); });
     const up = (e) => { e.preventDefault(); release(code); };
     el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up);
     el.addEventListener('contextmenu', (e) => e.preventDefault());
   });
-  document.querySelector('.k.menu').addEventListener('click', () => showEmuMenu());
+  document.querySelector('.k.menu').addEventListener('click', () => pauseMenu());
+  $('floatMenu').addEventListener('click', () => pauseMenu());
 
-  // D-pad: slide between directions, diagonals near 45°
+  // D-pad: slide between directions, diagonals in narrow bands
   const dpad = $('dpad');
   const dpadPointers = new Map();
   function dpadCodes(e) {
     const r = dpad.getBoundingClientRect();
     const x = e.clientX - (r.left + r.width / 2), y = e.clientY - (r.top + r.height / 2);
-    const dist = Math.hypot(x, y);
-    if (dist < r.width * 0.12) return [];
-    const ang = (Math.atan2(y, x) * 180 / Math.PI + 360) % 360; // 0 = right, 90 = down
+    if (Math.hypot(x, y) < r.width * 0.12) return [];
+    const ang = (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
+    const near = (a, b) => Math.abs(((a - b + 540) % 360) - 180) <= 60;
     const codes = [];
-    const near = (a, b) => Math.abs(((a - b + 540) % 360) - 180) <= 60; // 120° sectors -> 30° diagonal bands
     if (near(ang, 270)) codes.push(-1);
     if (near(ang, 90)) codes.push(-2);
     if (near(ang, 180)) codes.push(-3);
@@ -357,31 +397,33 @@
     for (const c of codes) if (prev.indexOf(c) < 0) { haptic(); press(c); }
     dpadPointers.set(id, codes);
   }
-  dpad.addEventListener('pointerdown', (e) => { if (e.target.classList.contains('ok')) return; e.preventDefault(); dpad.setPointerCapture(e.pointerId); dpadUpdate(e.pointerId, dpadCodes(e)); });
+  dpad.addEventListener('pointerdown', (e) => { if (e.target.classList.contains('ok')) return; e.preventDefault(); try { dpad.setPointerCapture(e.pointerId); } catch (x) { /* ignore */ } dpadUpdate(e.pointerId, dpadCodes(e)); });
   dpad.addEventListener('pointermove', (e) => { if (dpadPointers.has(e.pointerId)) dpadUpdate(e.pointerId, dpadCodes(e)); });
   const dpadEnd = (e) => { if (dpadPointers.has(e.pointerId)) { dpadUpdate(e.pointerId, []); dpadPointers.delete(e.pointerId); } };
   dpad.addEventListener('pointerup', dpadEnd); dpad.addEventListener('pointercancel', dpadEnd);
 
-  // keyboard
+  // keyboard (desktop + phones with hardware keys)
   const KEYMAP = {
     ArrowUp: -1, ArrowDown: -2, ArrowLeft: -3, ArrowRight: -4, Enter: -5, NumpadEnter: -5, ' ': -5,
     F1: -6, F2: -7, '[': -6, ']': -7, Backspace: -8, Delete: -8, '*': 42, '#': 35, NumpadMultiply: 42,
   };
   function codeForKey(e) {
-    if (e.key >= '0' && e.key <= '9' && e.key.length === 1) return 48 + (+e.key);
+    if (e.key && e.key.length === 1 && e.key >= '0' && e.key <= '9') return 48 + (+e.key);
     if (KEYMAP[e.key] !== undefined) return KEYMAP[e.key];
     if (KEYMAP[e.code] !== undefined) return KEYMAP[e.code];
-    if (e.key === 'q' || e.key === 'Q') return -6;
-    if (e.key === 'e' || e.key === 'E') return -7;
+    if (e.key === 'q' || e.key === 'Q' || e.key === 'SoftLeft') return -6;
+    if (e.key === 'e' || e.key === 'E' || e.key === 'SoftRight') return -7;
     return null;
   }
   window.addEventListener('keydown', (e) => {
     KP.audio.unlock();
-    if (!emu || !$('modal').hidden || $('player').hidden) return;
+    if (!emu || $('player').hidden) return;
+    if (!$('modal').hidden) { if (e.key === 'Escape' && closeSheet) closeSheet(); return; }
+    if (e.key === 'Escape') { e.preventDefault(); pauseMenu(); return; }
     const code = codeForKey(e);
     if (code === null) return;
     e.preventDefault();
-    if (e.repeat) { emu.keyDown(code); return; }
+    if (e.repeat) { if (!menuOpen) emu.keyDown(code); return; }
     press(code);
   });
   window.addEventListener('keyup', (e) => {
@@ -393,20 +435,24 @@
   });
   window.addEventListener('blur', releaseAll);
 
-  // touch / mouse on the game screen -> MIDP pointer events
+  // touch / mouse on the game screen -> MIDP pointer events (rotation aware)
   function gamePoint(e) {
     const r = display.getBoundingClientRect();
-    const { w, h } = emu.profile;
-    const s = Math.min(r.width / w, r.height / h);
-    const ox = r.left + (r.width - w * s) / 2, oy = r.top + (r.height - h * s) / 2;
-    return [Math.max(0, Math.min(w - 1, (e.clientX - ox) / s)), Math.max(0, Math.min(h - 1, (e.clientY - oy) / s))];
+    const w = prof.w, h = prof.h;
+    const dw = prof.rotate ? h : w, dh = prof.rotate ? w : h;
+    const s = Math.min(r.width / dw, r.height / dh);
+    const X = (e.clientX - (r.left + (r.width - dw * s) / 2)) / s;
+    const Y = (e.clientY - (r.top + (r.height - dh * s) / 2)) / s;
+    let x = X, y = Y;
+    if (prof.rotate === 270) { x = w - Y; y = X; } else if (prof.rotate === 90) { x = Y; y = h - X; }
+    return [Math.max(0, Math.min(w - 1, x)), Math.max(0, Math.min(h - 1, y))];
   }
   let screenPointer = null;
   display.addEventListener('pointerdown', (e) => {
-    if (!emu) return;
+    if (!emu || menuOpen) return;
     KP.audio.unlock();
     e.preventDefault();
-    display.setPointerCapture(e.pointerId);
+    try { display.setPointerCapture(e.pointerId); } catch (x) { /* ignore */ }
     screenPointer = e.pointerId;
     const [x, y] = gamePoint(e);
     emu.pointer('press', x, y);
@@ -418,8 +464,8 @@
   // ---------------- menus ----------------
   function showGameMenu(labels, cb) {
     sheet('Options', (body, close) => {
-      labels.forEach((l, i) => body.appendChild(btn(l, () => { close(); cb(i); })));
-      body.appendChild(btn('Cancel', () => { close(); cb(-1); }));
+      labels.forEach((l, i) => body.appendChild(opt('', l, () => { close(); cb(i); })));
+      body.appendChild(opt('', 'Cancel', () => { close(); cb(-1); }));
     });
   }
   function showTextInput(title, text, max, cb) {
@@ -427,82 +473,103 @@
       const ta = document.createElement('textarea'); ta.id = 'kpTextInput'; ta.maxLength = max || 256; ta.value = text || '';
       body.appendChild(ta);
       const row = document.createElement('div'); row.className = 'row';
-      row.append(btn('Cancel', () => { close(); cb(null); }), btn('OK', () => { close(); cb(ta.value); }, true));
+      row.append(opt('', 'Cancel', () => { close(); cb(null); }), opt('', 'OK', () => { close(); cb(ta.value); }, 'primary'));
       body.appendChild(row);
     });
   }
-  const SIZES = [[128, 128], [128, 160], [176, 208], [176, 220], [240, 320], [320, 240], [240, 400], [352, 416], [360, 640], [640, 360]];
-  function showEmuMenu() {
-    if (!emu) return;
-    userPaused = true; pauseEmu();
-    sheet(current.name, (body, close) => {
-      body.appendChild(btn('Resume', () => { userPaused = false; close(); resumeEmu(); }, true));
-      body.appendChild(btn('Restart game', () => { userPaused = false; close(); startGame(current); }));
-      body.appendChild(btn('Screen size: ' + emu.profile.w + '×' + emu.profile.h, () => {
-        close();
-        sheet('Screen size', (b2, close2) => {
-          const p = document.createElement('p'); p.className = 'info'; p.textContent = 'Pick the size this game was made for. The game restarts.'; b2.appendChild(p);
-          for (const [w, h] of SIZES) b2.appendChild(btn(w + ' × ' + h + (w === emu.profile.w && h === emu.profile.h ? '  (current)' : ''), () => {
-            close2();
-            current.override = { w, h, landscape: w > h, touch: emu.profile.touch };
-            current.w = w; current.h = h;
-            DB.put(current); userPaused = false; startGame(current);
-          }));
-        });
-      }));
-      body.appendChild(btn('Exit to library', () => { userPaused = false; close(); exitGame(); }));
-    }, () => { if (userPaused) { userPaused = false; resumeEmu(); } });
+
+  function saveOverride(patch) {
+    current.override = Object.assign({}, current.override || {}, patch);
+    DB.put(current);
   }
 
-  // ---------------- top bar ----------------
+  const SIZES = [[128, 128], [128, 160], [176, 208], [176, 220], [240, 320], [320, 240], [240, 400], [352, 416], [360, 640], [640, 360], [480, 800], [800, 480]];
+  const ROT_LABEL = { 0: 'Off', 270: 'Left', 90: 'Right' };
+  function pauseMenu() {
+    if (!emu || menuOpen) return;
+    releaseAll();
+    menuOpen = true;
+    pauseEmu();
+    const resume = () => { menuOpen = false; resumeEmu(); };
+    sheet(current.name, (body, close) => {
+      body.appendChild(opt('', 'Resume', () => close(), 'primary'));
+      const keysOn = !$('device').classList.contains('nokeys');
+      body.appendChild(opt('⌨', 'Keypad', () => { close(); current.keypad = !keysOn; DB.put(current); applyLayout(); }, '', keysOn ? 'On' : 'Off'));
+      body.appendChild(opt('⟳', 'Rotate screen', () => {
+        close();
+        const next = prof.rotate === 0 ? 270 : prof.rotate === 270 ? 90 : 0;
+        saveOverride({ rotate: next });
+        prof = profileOf(current);
+        applyLayout();
+        toast('Rotation: ' + ROT_LABEL[next]);
+      }, '', ROT_LABEL[prof.rotate] || 'Off'));
+      body.appendChild(opt('▣', 'Screen size', () => { close(); sizeMenu(); }, '', prof.w + '×' + prof.h));
+      body.appendChild(opt('♪', 'Sound', () => { close(); setMuted(!muted); }, '', muted ? 'Off' : 'On'));
+      if (window.MediaRecorder && display.captureStream) body.appendChild(opt('●', recorder ? 'Stop recording' : 'Record video', () => { close(); toggleRecord(); }));
+      if (!IN_APP && document.documentElement.requestFullscreen) body.appendChild(opt('⛶', document.fullscreenElement ? 'Exit full screen' : 'Full screen', () => { close(); toggleFullscreen(); }));
+      body.appendChild(opt('↺', 'Restart game', () => { menuOpen = false; close(); startGame(current); }));
+      body.appendChild(opt('⌂', 'Exit to games', () => { menuOpen = false; close(); exitGame(); }, 'danger'));
+    }, resume);
+  }
+  function sizeMenu() {
+    menuOpen = true;
+    releaseAll();
+    pauseEmu();
+    sheet('Screen size', (body, close) => {
+      const p = document.createElement('p'); p.className = 'info'; p.textContent = 'Pick the size this game was made for. The game restarts.'; body.appendChild(p);
+      for (const [w, h] of SIZES) {
+        body.appendChild(opt('', w + ' × ' + h, () => {
+          menuOpen = false; close();
+          saveOverride({ w, h });
+          startGame(current);
+        }, '', w === prof.w && h === prof.h ? 'current' : undefined));
+      }
+    }, () => { menuOpen = false; resumeEmu(); });
+  }
+
+  // ---------------- sound / fullscreen ----------------
   let muted = false;
   try { muted = localStorage.getItem('kp:muted') === '1'; } catch (e) { /* ignore */ }
   KP.audio.setMuted(muted);
+  function setMuted(m) {
+    muted = m;
+    KP.audio.setMuted(m);
+    if (emu) emu.host.muted = m;
+    $('muteBtn').classList.toggle('muted', m);
+    try { localStorage.setItem('kp:muted', m ? '1' : '0'); } catch (e) { /* ignore */ }
+    if (emu) toast(m ? 'Sound off' : 'Sound on');
+  }
   $('muteBtn').classList.toggle('muted', muted);
-  $('muteBtn').addEventListener('click', () => {
-    muted = !muted;
-    KP.audio.setMuted(muted);
-    if (emu) emu.host.muted = muted;
-    $('muteBtn').classList.toggle('muted', muted);
-    try { localStorage.setItem('kp:muted', muted ? '1' : '0'); } catch (e) { /* ignore */ }
-  });
-  $('homeBtn').addEventListener('click', () => { if (emu) exitGame(); });
-  $('keypadBtn').addEventListener('click', () => {
-    const dev = $('device');
-    const hide = !dev.classList.contains('nokeys');
-    dev.classList.toggle('nokeys', hide);
-    if (current) { current.forceKeys = !hide; DB.put(current); }
-    resizeDisplay();
-  });
-  $('fsBtn').addEventListener('click', async () => {
+  $('muteBtn').addEventListener('click', () => setMuted(!muted));
+  async function toggleFullscreen() {
     try {
       if (document.fullscreenElement) { await document.exitFullscreen(); return; }
       await $('app').requestFullscreen();
-      if (emu && emu.profile.landscape && screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(() => {});
+      if (prof && prof.landscape && screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(() => {});
     } catch (e) { toast('Full screen is not available here.'); }
-  });
+  }
 
   // ---------------- recording ----------------
   let recorder = null, recChunks = [], recStart = 0, recTimer = null, recDest = null;
   function stopRecording() { if (recorder && recorder.state !== 'inactive') recorder.stop(); }
-  $('recBtn').addEventListener('click', () => {
+  function toggleRecord() {
     if (recorder) { stopRecording(); return; }
     if (!emu) return;
     const stream = display.captureStream(30);
     const ac = KP.audio.ensure();
-    if (ac) {
+    if (ac && ac.createMediaStreamDestination) {
       recDest = ac.createMediaStreamDestination();
       KP.audio.master.connect(recDest);
       recDest.stream.getAudioTracks().forEach((t) => stream.addTrack(t));
     }
     const types = ['video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm', 'video/mp4'];
     const mimeType = types.find((m) => MediaRecorder.isTypeSupported(m)) || '';
-    try { recorder = new MediaRecorder(stream, mimeType ? { mimeType, videoBitsPerSecond: 5e6 } : undefined); } catch (e) { toast('Recording is not supported in this browser.'); return; }
+    try { recorder = new MediaRecorder(stream, mimeType ? { mimeType, videoBitsPerSecond: 5e6 } : undefined); } catch (e) { toast('Recording is not supported here.'); return; }
     recChunks = [];
     recorder.ondataavailable = (e) => { if (e.data && e.data.size) recChunks.push(e.data); };
     recorder.onstop = () => {
       clearInterval(recTimer);
-      $('recBtn').classList.remove('recording'); $('recTime').textContent = '';
+      $('recBadge').hidden = true;
       if (recDest) { try { KP.audio.master.disconnect(recDest); } catch (e) { /* ignore */ } recDest = null; }
       const blob = new Blob(recChunks, { type: recorder.mimeType || 'video/webm' });
       const ext = (recorder.mimeType || '').indexOf('mp4') >= 0 ? 'mp4' : 'webm';
@@ -512,14 +579,15 @@
     };
     recorder.start(1000);
     recStart = Date.now();
-    $('recBtn').classList.add('recording');
+    $('recBadge').hidden = false; $('recTime').textContent = '0:00';
     recTimer = setInterval(() => { const s = Math.floor((Date.now() - recStart) / 1000); $('recTime').textContent = Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }, 500);
-    toast('Recording… tap the red button again to save.');
-  });
+    toast('Recording. Open the menu and choose Stop recording to save.', 3500);
+  }
+  $('recBadge').addEventListener('click', () => stopRecording());
   function saveBlob(blob, name) {
     if (Bridge && Bridge.saveFile) {
       const r = new FileReader();
-      r.onload = () => { Bridge.saveFile(name, String(r.result).split(',')[1], blob.type); toast('Video saved to Movies/KeyPlay'); };
+      r.onload = () => { Bridge.saveFile(name, String(r.result).split(',')[1], blob.type); };
       r.readAsDataURL(blob);
       return;
     }
@@ -533,18 +601,17 @@
   // ---------------- lifecycle ----------------
   document.addEventListener('visibilitychange', () => {
     if (!emu) return;
-    if (document.hidden) { if (!recorder) pauseEmu(); } else if (!userPaused && $('modal').hidden) resumeEmu();
+    if (document.hidden) { if (!recorder) { releaseAll(); pauseEmu(); } } else if (!menuOpen) resumeEmu();
   });
   window.addEventListener('pointerdown', () => KP.audio.unlock(), { capture: true });
 
-  // file input + drag & drop
   $('jarInput').addEventListener('change', (e) => { handleFiles(Array.from(e.target.files || [])); e.target.value = ''; });
-  const lib = $('library');
-  ['dragenter', 'dragover'].forEach((ev) => lib.addEventListener(ev, (e) => { e.preventDefault(); lib.classList.add('drag'); }));
-  ['dragleave', 'drop'].forEach((ev) => lib.addEventListener(ev, (e) => { e.preventDefault(); lib.classList.remove('drag'); }));
-  lib.addEventListener('drop', (e) => handleFiles(Array.from(e.dataTransfer.files || [])));
+  const home = $('home');
+  ['dragenter', 'dragover'].forEach((ev) => home.addEventListener(ev, (e) => { e.preventDefault(); home.classList.add('drag'); }));
+  ['dragleave', 'drop'].forEach((ev) => home.addEventListener(ev, (e) => { e.preventDefault(); home.classList.remove('drag'); }));
+  home.addEventListener('drop', (e) => handleFiles(Array.from(e.dataTransfer.files || [])));
 
-  // Android app: JAR opened from another app ("Open with KeyPlay")
+  // called by the Android app
   window.KeyPlayApp = {
     async openJarBase64(name, b64) {
       const bin = atob(b64);
@@ -555,20 +622,22 @@
       if (rec) startGame(rec);
     },
     back() {
-      if (!$('modal').hidden && sheetOpen) { sheetOpen(); return true; }
-      if (emu) { showEmuMenu(); return true; }
+      if (!$('modal').hidden && closeSheet) { closeSheet(); return true; }
+      if (emu) { pauseMenu(); return true; }
       return false;
     },
+    videoSaved(ok) { toast(ok ? 'Video saved to Movies/KeyPlay' : 'Could not save the video', 3500); },
   };
 
   (async function init() {
     if (typeof BigInt === 'undefined' || typeof BigInt64Array === 'undefined') {
-      toastLib('This browser is too old for KeyPlay. Update Chrome or "Android System WebView" from the Play Store.');
+      $('empty').hidden = false;
+      note('This browser is too old for KeyPlay. Update Chrome or "Android System WebView" from the Play Store.');
       return;
     }
     await DB.open();
     await renderLibrary();
-    // ?jar=<url> loads a game directly (used by website demo links and automated tests)
+    // ?jar=<url> loads a game directly (demo links and automated tests); &size=WxH &touch=1 &rotate=270
     const q = new URLSearchParams(location.search);
     const url = q.get('jar');
     if (url) {
@@ -577,16 +646,17 @@
         if (!res.ok) throw new Error(res.status);
         const bytes = new Uint8Array(await res.arrayBuffer());
         const rec = await addJarBytes(url.split('/').pop(), bytes);
-        await renderLibrary();
-        if (rec) startGame(rec);
-      } catch (e) { toastLib('Could not load ' + url); }
-    }
-    const auto = q.get('keys');
-    if (auto) {
-      for (const part of auto.split(',')) {
-        const [at, code, hold] = part.split(':').map(Number);
-        setTimeout(() => { press(code); setTimeout(() => release(code), hold || 150); }, at);
-      }
+        if (rec) {
+          const size = /^(\d+)x(\d+)$/.exec(q.get('size') || '');
+          const o = {};
+          if (size) { o.w = +size[1]; o.h = +size[2]; }
+          if (q.get('touch')) o.touch = q.get('touch') === '1';
+          if (q.get('rotate')) o.rotate = +q.get('rotate');
+          if (Object.keys(o).length) { rec.override = o; await DB.put(rec); }
+          await renderLibrary();
+          startGame(rec);
+        }
+      } catch (e) { note('Could not load ' + url); }
     }
   })();
 })();
