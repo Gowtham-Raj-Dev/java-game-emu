@@ -170,7 +170,9 @@ section { padding-block: clamp(48px, 7vw, 88px); border-top: 1px solid var(--lin
 .keymap dt { font: 600 0.9rem var(--mono); }
 .keymap dd { margin: 0; color: var(--muted); }
 
-.faq { display: grid; gap: 10px; max-width: 780px; }
+.faq { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 16px; align-items: start; }
+.faq-col { display: grid; gap: 10px; }
+@media (max-width: 860px) { .faq { grid-template-columns: minmax(0, 1fr); } }
 .faq details { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 4px 20px; }
 .faq summary { cursor: pointer; font-weight: 600; padding-block: 14px; list-style: none; display: flex; justify-content: space-between; gap: 16px; }
 .faq summary::-webkit-details-marker { display: none; }
@@ -360,6 +362,7 @@ section { padding-block: clamp(48px, 7vw, 88px); border-top: 1px solid var(--lin
         <h2>Questions people ask</h2>
       </div>
       <div class="faq">
+        <div class="faq-col">
         <details>
           <summary>Android says the app is from an unknown source. Is it safe?</summary>
           <p>JavaPlay is not on the Play Store, so Android shows this warning for any app installed from a website. The app asks for no permissions except vibration, needs no account and shows no ads.</p>
@@ -372,6 +375,8 @@ section { padding-block: clamp(48px, 7vw, 88px); border-top: 1px solid var(--lin
           <summary>The game looks too small or cut off.</summary>
           <p>Open the ☰ menu while playing and choose Screen size. Pick the size the game was made for, often 240×320. The game restarts with the new size.</p>
         </details>
+        </div>
+        <div class="faq-col">
         <details>
           <summary>The game shows sideways.</summary>
           <p>Open the ☰ menu and tap Rotate screen until it is upright (Off, Left, Right). JavaPlay remembers the choice for that game.</p>
@@ -384,6 +389,7 @@ section { padding-block: clamp(48px, 7vw, 88px); border-top: 1px solid var(--lin
           <summary>Can I play on a computer?</summary>
           <p>Yes. Open Play in browser, add a .jar and use the keyboard or click the keypad. Use a recent Chrome or Edge.</p>
         </details>
+        </div>
       </div>
     </div>
   </section>
