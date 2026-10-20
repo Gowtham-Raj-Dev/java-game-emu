@@ -1,0 +1,27 @@
+# Android build output and local config
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+android/.kotlin/
+# generated from ../web at build time
+android/app/src/main/assets/
+
+# signing secrets: never commit
+android/keystore.properties
+android/signing/
+*.jks
+*.keystore
+
+# tools
+tools/node_modules/
+tools/vmtest/out/
+tools/vmtest/actual.txt
+tools/vmtest/stderr.txt
+tools/_*.js
+
+# leftovers / OS
+emulator-src/
+*.log
+.DS_Store
+Thumbs.db

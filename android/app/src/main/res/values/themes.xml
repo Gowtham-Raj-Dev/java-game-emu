@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="ic_launcher_background">#14161C</color>
+    <style name="KeyPlayTheme" parent="@android:style/Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/ic_launcher_background</item>
+        <item name="android:colorAccent">#FF8A1F</item>
+        <item name="android:statusBarColor">#171A21</item>
+        <item name="android:navigationBarColor">#0E1014</item>
+    </style>
+</resources>

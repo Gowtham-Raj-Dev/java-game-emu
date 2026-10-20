@@ -1,0 +1,301 @@
+package in.codelove.keyplay;
+
+import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.content.ActivityNotFoundException;
+import android.content.ContentValues;
+import android.content.Context;
+import android.content.Intent;
+import android.content.pm.ActivityInfo;
+import android.database.Cursor;
+import android.graphics.Color;
+import android.net.Uri;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.Environment;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
+import android.provider.MediaStore;
+import android.provider.OpenableColumns;
+import android.util.Base64;
+import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
+import android.webkit.JavascriptInterface;
+import android.webkit.MimeTypeMap;
+import android.webkit.ValueCallback;
+import android.webkit.WebChromeClient;
+import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
+import android.widget.Toast;
+
+import org.json.JSONObject;
+
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
+/**
+ * KeyPlay: native shell around the KeyPlay J2ME engine (web/engine, written in JavaScript).
+ * Assets are served from a private https origin so storage, audio and recording work like a website.
+ */
+public class MainActivity extends Activity {
+	private static final String ORIGIN = "https://keyplay.app/";
+	private static final int PICK_FILES = 1;
+
+	private WebView web;
+	private ValueCallback<Uri[]> fileCallback;
+	private boolean pageReady;
+	private String pendingJarJs;
+
+	@SuppressLint("SetJavaScriptEnabled")
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		Window w = getWindow();
+		w.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+		if (Build.VERSION.SDK_INT >= 21) {
+			w.setStatusBarColor(Color.parseColor("#171A21"));
+			w.setNavigationBarColor(Color.parseColor("#0E1014"));
+		}
+
+		if ((getApplicationInfo().flags & android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) != 0) {
+			WebView.setWebContentsDebuggingEnabled(true); // debug builds only: chrome://inspect
+		}
+		web = new WebView(this);
+		web.setBackgroundColor(Color.parseColor("#0E1014"));
+		WebSettings s = web.getSettings();
+		s.setJavaScriptEnabled(true);
+		s.setDomStorageEnabled(true);
+		s.setDatabaseEnabled(true);
+		s.setMediaPlaybackRequiresUserGesture(false);
+		s.setAllowFileAccess(false);
+		s.setAllowContentAccess(true);
+		s.setSupportZoom(false);
+		s.setTextZoom(100);
+		web.setOverScrollMode(View.OVER_SCROLL_NEVER);
+		web.addJavascriptInterface(new Bridge(), "KeyPlayAndroid");
+		web.setWebViewClient(new Client());
+		web.setWebChromeClient(new Chrome());
+		setContentView(web);
+
+		web.loadUrl(ORIGIN + "play.html");
+		handleIntent(getIntent());
+	}
+
+	@Override
+	protected void onNewIntent(Intent intent) {
+		super.onNewIntent(intent);
+		handleIntent(intent);
+	}
+
+	// "Open with KeyPlay" from a file manager or the browser's downloads
+	private void handleIntent(Intent intent) {
+		if (intent == null || !Intent.ACTION_VIEW.equals(intent.getAction()) || intent.getData() == null) return;
+		Uri uri = intent.getData();
+		new Thread(() -> {
+			try {
+				byte[] bytes = readAll(uri);
+				String name = displayName(uri);
+				String js = "window.KeyPlayApp&&KeyPlayApp.openJarBase64(" + JSONObject.quote(name) + ",'"
+						+ Base64.encodeToString(bytes, Base64.NO_WRAP) + "')";
+				runOnUiThread(() -> {
+					if (pageReady) web.evaluateJavascript(js, null);
+					else pendingJarJs = js;
+				});
+			} catch (IOException | SecurityException e) {
+				runOnUiThread(() -> Toast.makeText(this, "Could not open the file", Toast.LENGTH_LONG).show());
+			}
+		}).start();
+	}
+
+	private byte[] readAll(Uri uri) throws IOException {
+		try (InputStream in = getContentResolver().openInputStream(uri)) {
+			if (in == null) throw new IOException("no stream");
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			byte[] buf = new byte[16384];
+			int n;
+			while ((n = in.read(buf)) > 0) out.write(buf, 0, n);
+			return out.toByteArray();
+		}
+	}
+
+	private String displayName(Uri uri) {
+		String name = null;
+		try (Cursor c = getContentResolver().query(uri, new String[]{OpenableColumns.DISPLAY_NAME}, null, null, null)) {
+			if (c != null && c.moveToFirst()) name = c.getString(0);
+		} catch (Exception ignored) {
+		}
+		if (name == null) name = uri.getLastPathSegment();
+		return name == null ? "game.jar" : name;
+	}
+
+	@Override
+	public void onBackPressed() {
+		web.evaluateJavascript("window.KeyPlayApp?KeyPlayApp.back():false", v -> {
+			if (!"true".equals(v)) finish();
+		});
+	}
+
+	@Override
+	protected void onPause() {
+		super.onPause();
+		web.onPause();
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+		web.onResume();
+	}
+
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		if (requestCode != PICK_FILES || fileCallback == null) {
+			super.onActivityResult(requestCode, resultCode, data);
+			return;
+		}
+		Uri[] result = null;
+		if (resultCode == RESULT_OK && data != null) {
+			if (data.getClipData() != null) {
+				int n = data.getClipData().getItemCount();
+				result = new Uri[n];
+				for (int i = 0; i < n; i++) result[i] = data.getClipData().getItemAt(i).getUri();
+			} else if (data.getData() != null) {
+				result = new Uri[]{data.getData()};
+			}
+		}
+		fileCallback.onReceiveValue(result);
+		fileCallback = null;
+	}
+
+	private void hideSystemBars(boolean on) {
+		View d = getWindow().getDecorView();
+		if (on) {
+			d.setSystemUiVisibility(View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY | View.SYSTEM_UI_FLAG_FULLSCREEN
+					| View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
+		} else {
+			d.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
+		}
+	}
+
+	private class Client extends WebViewClient {
+		@Override
+		public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
+			Uri u = request.getUrl();
+			if (!"keyplay.app".equals(u.getHost())) return null;
+			String path = u.getPath();
+			if (path == null || path.equals("/")) path = "/play.html";
+			try {
+				InputStream in = getAssets().open("web" + path);
+				String ext = MimeTypeMap.getFileExtensionFromUrl(path);
+				String mime = "js".equals(ext) ? "text/javascript"
+						: "css".equals(ext) ? "text/css"
+						: "html".equals(ext) ? "text/html"
+						: MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext);
+				return new WebResourceResponse(mime == null ? "application/octet-stream" : mime, "utf-8", in);
+			} catch (IOException e) {
+				return new WebResourceResponse("text/plain", "utf-8", 404, "Not Found", null, null);
+			}
+		}
+
+		@Override
+		public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+			Uri u = request.getUrl();
+			if ("keyplay.app".equals(u.getHost())) return false;
+			try {
+				startActivity(new Intent(Intent.ACTION_VIEW, u));
+			} catch (ActivityNotFoundException ignored) {
+			}
+			return true;
+		}
+
+		@Override
+		public void onPageFinished(WebView view, String url) {
+			pageReady = true;
+			if (pendingJarJs != null) {
+				view.evaluateJavascript(pendingJarJs, null);
+				pendingJarJs = null;
+			}
+		}
+	}
+
+	private class Chrome extends WebChromeClient {
+		@Override
+		public boolean onShowFileChooser(WebView view, ValueCallback<Uri[]> callback, FileChooserParams params) {
+			if (fileCallback != null) fileCallback.onReceiveValue(null);
+			fileCallback = callback;
+			Intent i = new Intent(Intent.ACTION_GET_CONTENT);
+			i.addCategory(Intent.CATEGORY_OPENABLE);
+			i.setType("*/*");
+			i.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+			try {
+				startActivityForResult(Intent.createChooser(i, "Choose a .jar game"), PICK_FILES);
+			} catch (ActivityNotFoundException e) {
+				fileCallback = null;
+				return false;
+			}
+			return true;
+		}
+	}
+
+	/** Called from JavaScript as window.KeyPlayAndroid. */
+	private class Bridge {
+		@JavascriptInterface
+		public void vibrate(int ms) {
+			Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+			if (v == null || ms <= 0) return;
+			if (Build.VERSION.SDK_INT >= 26) v.vibrate(VibrationEffect.createOneShot(Math.min(ms, 2000), VibrationEffect.DEFAULT_AMPLITUDE));
+			else v.vibrate(Math.min(ms, 2000));
+		}
+
+		@JavascriptInterface
+		public void setOrientation(String mode) {
+			runOnUiThread(() -> {
+				if ("landscape".equals(mode)) {
+					setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
+					hideSystemBars(true);
+				} else if ("portrait".equals(mode)) {
+					setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+					hideSystemBars(false);
+				} else {
+					setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+					hideSystemBars(false);
+				}
+			});
+		}
+
+		@JavascriptInterface
+		public void saveFile(String name, String base64, String mime) {
+			byte[] data = Base64.decode(base64, Base64.DEFAULT);
+			try {
+				if (Build.VERSION.SDK_INT >= 29) {
+					ContentValues cv = new ContentValues();
+					cv.put(MediaStore.MediaColumns.DISPLAY_NAME, name);
+					cv.put(MediaStore.MediaColumns.MIME_TYPE, mime == null || mime.isEmpty() ? "video/webm" : mime.split(";")[0]);
+					cv.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_MOVIES + "/KeyPlay");
+					Uri uri = getContentResolver().insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, cv);
+					if (uri == null) throw new IOException("insert failed");
+					try (OutputStream out = getContentResolver().openOutputStream(uri)) {
+						if (out == null) throw new IOException("no output");
+						out.write(data);
+					}
+				} else {
+					File dir = new File(getExternalFilesDir(Environment.DIRECTORY_MOVIES), "KeyPlay");
+					if (!dir.exists() && !dir.mkdirs()) throw new IOException("mkdir failed");
+					try (FileOutputStream out = new FileOutputStream(new File(dir, name))) {
+						out.write(data);
+					}
+				}
+			} catch (IOException e) {
+				runOnUiThread(() -> Toast.makeText(MainActivity.this, "Could not save the video", Toast.LENGTH_LONG).show());
+			}
+		}
+	}
+}

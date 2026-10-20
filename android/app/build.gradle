@@ -1,0 +1,55 @@
+plugins {
+    id 'com.android.application'
+}
+
+// The game engine + player UI live in ../web (also published as the website).
+// They are copied into the APK assets at build time so there is a single source.
+def webDir = rootProject.file('../web')
+tasks.register('copyWebAssets', Copy) {
+    from(webDir) {
+        include 'play.html', 'app/**', 'engine/**', 'assets/keyplay-logo.png'
+    }
+    into layout.projectDirectory.dir('src/main/assets/web')
+}
+tasks.named('preBuild') { dependsOn 'copyWebAssets' }
+
+android {
+    namespace 'in.codelove.keyplay'
+    compileSdk 37
+
+    defaultConfig {
+        applicationId 'in.codelove.keyplay'
+        minSdk 21
+        targetSdk 34
+        versionCode 2
+        versionName '2.0.0'
+    }
+
+    signingConfigs {
+        release {
+            def propsFile = rootProject.file('keystore.properties')
+            if (propsFile.exists()) {
+                def p = new Properties()
+                propsFile.withInputStream { p.load(it) }
+                storeFile rootProject.file(p['storeFile'].replace('../', ''))
+                storePassword p['storePassword']
+                keyAlias p['keyAlias']
+                keyPassword p['keyPassword']
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            if (rootProject.file('keystore.properties').exists()) signingConfig signingConfigs.release
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}

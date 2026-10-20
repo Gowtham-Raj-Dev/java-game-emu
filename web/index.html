@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>KeyPlay – Java Games on Android &amp; Browser</title>
+<meta name="description" content="KeyPlay plays old Java (J2ME) phone games on Android and in your browser. A 168 KB app with a real phone keypad. Download .jar games from PHONEKY and play.">
+<meta name="theme-color" content="#101217">
+<link rel="icon" type="image/png" href="assets/keyplay-logo.png">
+<meta property="og:title" content="KeyPlay – Java Games on Android &amp; Browser">
+<meta property="og:description" content="Play old Java (J2ME) phone games on Android or in the browser. 168 KB, phone keypad controls.">
+<meta property="og:image" content="assets/shots/app-diamondrush.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: one column; hero = copy | phone screenshot; sections stack below */
+:root {
+  --bg: #101217;
+  --surface: #191c23;
+  --surface-2: #222631;
+  --line: #2e3340;
+  --fg: #eef0f4;
+  --muted: #9aa1b1;
+  --key: #ff8a1f;
+  --key-ink: #1a1206;
+  --display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body: "Figtree", "Segoe UI", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 400 1.0625rem/1.6 var(--body); -webkit-font-smoothing: antialiased; }
+img { max-width: 100%; height: auto; display: block; }
+a { color: var(--key); }
+:focus-visible { outline: 2px solid var(--key); outline-offset: 3px; border-radius: 6px; }
+code { font: 400 0.9em var(--mono); color: var(--fg); }
+.wrap { max-width: 1080px; margin: 0 auto; padding-left: max(20px, env(safe-area-inset-left, 0px)); padding-right: max(20px, env(safe-area-inset-right, 0px)); }
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; margin: 0; letter-spacing: -0.02em; }
+h2 { font-size: clamp(1.7rem, 3.4vw, 2.4rem); font-weight: 800; }
+h3 { font-size: 1.2rem; font-weight: 700; }
+p { margin: 0; }
+.eyebrow { font: 600 0.75rem/1 var(--mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--key); }
+.lede { color: var(--muted); max-width: 60ch; }
+
+.top { position: sticky; top: 0; z-index: 5; background: rgba(16, 18, 23, 0.9); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); padding-top: env(safe-area-inset-top, 0px); }
+.top .wrap { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 12px; }
+.brand { display: flex; align-items: center; gap: 10px; color: var(--fg); text-decoration: none; font: 800 1.25rem var(--display); }
+.brand img { width: 34px; height: 34px; }
+.top nav { display: flex; gap: 22px; align-items: center; }
+.top nav a.link { color: var(--muted); text-decoration: none; font-weight: 500; font-size: 0.95rem; }
+.top nav a.link:hover { color: var(--fg); }
+
+.btn { display: inline-flex; align-items: center; gap: 10px; padding: 14px 22px; border-radius: 999px; font: 700 1rem var(--body); text-decoration: none; border: 1px solid var(--line); color: var(--fg); background: var(--surface-2); transition: transform .15s ease, background .15s ease; }
+.btn:hover { transform: translateY(-1px); background: var(--line); }
+.btn.primary { background: var(--key); color: var(--key-ink); border-color: transparent; }
+.btn.primary:hover { background: #ffa04a; }
+.btn.small { padding: 9px 16px; font-size: 0.9rem; }
+.btn svg { width: 18px; height: 18px; flex: none; }
+
+.hero { padding-block: clamp(36px, 6vw, 80px) clamp(32px, 5vw, 64px); }
+.hero .wrap { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: clamp(28px, 5vw, 64px); align-items: center; }
+.hero h1 { font-size: clamp(2.4rem, 6vw, 4.1rem); font-weight: 800; line-height: 1.02; }
+.hero h1 em { font-style: normal; color: var(--key); }
+.hero-copy { display: grid; gap: 22px; min-width: 0; }
+.cta { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.specs { display: flex; flex-wrap: wrap; gap: 8px; font: 400 0.8rem var(--mono); color: var(--muted); }
+.specs span { border: 1px solid var(--line); border-radius: 6px; padding: 4px 9px; }
+.phone { justify-self: center; width: min(320px, 100%); padding: 10px; border-radius: 34px; background: linear-gradient(160deg, #2b303c, #15171d); border: 1px solid var(--line); box-shadow: 0 30px 80px -30px rgba(255, 138, 31, .35), 0 20px 40px -20px #000; }
+.phone img { border-radius: 24px; width: 100%; }
+
+section { padding-block: clamp(48px, 7vw, 88px); border-top: 1px solid var(--line); }
+.sec-head { display: grid; gap: 12px; margin-bottom: 36px; }
+
+.steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.step { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 24px; display: grid; gap: 10px; align-content: start; }
+.step .num { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: var(--surface-2); border: 1px solid var(--line); font: 600 1.05rem var(--mono); color: var(--key); }
+.step p { color: var(--muted); font-size: 0.98rem; }
+
+.tested { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.game { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; overflow: hidden; display: grid; grid-template-columns: 170px minmax(0, 1fr); }
+.game img { width: 100%; height: 100%; object-fit: cover; object-position: top; background: #000; }
+.game .body { padding: 20px; display: grid; gap: 10px; align-content: start; }
+.game p { color: var(--muted); font-size: 0.95rem; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; font: 400 0.75rem var(--mono); color: var(--muted); }
+.chips span { border: 1px solid var(--line); border-radius: 6px; padding: 2px 8px; }
+.note { margin-top: 16px; color: var(--muted); font-size: 0.92rem; }
+
+.features { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.feat { border-top: 2px solid var(--key); padding-top: 14px; display: grid; gap: 6px; }
+.feat p { color: var(--muted); font-size: 0.95rem; }
+
+.controls { display: grid; grid-template-columns: 0.9fr 1.1fr; gap: clamp(24px, 4vw, 56px); align-items: center; }
+.controls .shot { max-width: 320px; justify-self: center; border-radius: 22px; overflow: hidden; border: 1px solid var(--line); }
+.keymap { display: grid; border-top: 1px solid var(--line); margin: 0; }
+.keymap div { display: grid; grid-template-columns: 11rem 1fr; gap: 16px; padding-block: 12px; border-bottom: 1px solid var(--line); }
+.keymap dt { font: 600 0.9rem var(--mono); }
+.keymap dd { margin: 0; color: var(--muted); }
+
+.faq { display: grid; gap: 10px; max-width: 780px; }
+.faq details { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 4px 20px; }
+.faq summary { cursor: pointer; font-weight: 600; padding-block: 14px; list-style: none; display: flex; justify-content: space-between; gap: 16px; }
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after { content: "+"; font: 600 1.2rem var(--mono); color: var(--key); }
+.faq details[open] summary::after { content: "−"; }
+.faq details p { color: var(--muted); padding-bottom: 16px; }
+
+footer { border-top: 1px solid var(--line); padding-block: 32px calc(32px + env(safe-area-inset-bottom, 0px)); color: var(--muted); font-size: 0.88rem; }
+footer .wrap { display: grid; gap: 8px; }
+
+@media (max-width: 860px) {
+  .hero .wrap, .controls { grid-template-columns: minmax(0, 1fr); }
+  .steps, .features, .tested { grid-template-columns: minmax(0, 1fr); }
+  .top nav a.link { display: none; }
+}
+@media (max-width: 460px) {
+  .game { grid-template-columns: minmax(0, 1fr); }
+  .game img { max-height: 320px; }
+  .keymap div { grid-template-columns: 1fr; gap: 2px; }
+}
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .btn { transition: none; } }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#"><img src="assets/keyplay-logo.png" alt="" width="34" height="34">KeyPlay</a>
+    <nav>
+      <a class="link" href="#how">How to play</a>
+      <a class="link" href="#tested">Games</a>
+      <a class="link" href="#controls">Controls</a>
+      <a class="link" href="#faq">FAQ</a>
+      <a class="btn primary small" href="play.html">Play in browser</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="hero">
+    <div class="wrap">
+      <div class="hero-copy">
+        <p class="eyebrow">J2ME emulator · Android &amp; browser</p>
+        <h1>Old Java phone games, <em>back in your hand.</em></h1>
+        <p class="lede">KeyPlay runs classic <code>.jar</code> games from Nokia, Sony Ericsson and Gameloft days. The game sits on top and a real phone keypad sits below it: soft keys, D-pad, OK and 0–9.</p>
+        <div class="cta">
+          <a class="btn primary" href="download/KeyPlay.apk" download>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 20h14"/></svg>
+            Download Android app
+          </a>
+          <a class="btn" href="play.html">Play in browser</a>
+        </div>
+        <div class="specs" aria-label="App details">
+          <span>168 KB</span><span>Android 5.0+</span><span>Any modern browser</span><span>MIDP 2.0 · CLDC 1.1</span><span>Nokia UI API</span>
+        </div>
+      </div>
+      <div class="phone">
+        <img src="assets/shots/app-diamondrush.png" alt="Diamond Rush from PHONEKY running in the KeyPlay Android app: game on top, phone keypad below" width="720" height="1472">
+      </div>
+    </div>
+  </div>
+
+  <section id="how">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">How to play</p>
+        <h2>Three steps to your first game</h2>
+      </div>
+      <div class="steps">
+        <div class="step">
+          <span class="num">1</span>
+          <h3>Get KeyPlay</h3>
+          <p>On Android, download the app and open it. If Android asks, allow your browser to <em>install unknown apps</em>. On a computer, just open <a href="play.html">Play in browser</a>.</p>
+        </div>
+        <div class="step">
+          <span class="num">2</span>
+          <h3>Download a game</h3>
+          <p>Find a Java game on <a href="https://mobile.phoneky.com/games/" target="_blank" rel="noopener">PHONEKY</a> and download the <code>.jar</code> file. If the game has screen sizes, pick 240×320.</p>
+        </div>
+        <div class="step">
+          <span class="num">3</span>
+          <h3>Add it and play</h3>
+          <p>Tap <strong>+ Add game</strong> and pick the <code>.jar</code>, or open the download with KeyPlay. Screen size, landscape and controls are set for you.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="tested">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">Tested with PHONEKY games</p>
+        <h2>Real games, played in KeyPlay</h2>
+        <p class="lede">Both games below were downloaded from PHONEKY and played in the KeyPlay Android app. The screenshots are from that test.</p>
+      </div>
+      <div class="tested">
+        <article class="game">
+          <img src="assets/shots/app-bounce.png" alt="Bounce Level 1 in the KeyPlay app" width="720" height="1472" loading="lazy">
+          <div class="body">
+            <h3>Bounce</h3>
+            <div class="chips"><span>Nokia</span><span>128×128 auto</span><span>Nokia UI API</span></div>
+            <p>The red ball classic. KeyPlay detects its small 128×128 screen and scales it up sharply. The menu and levels play like on the Nokia original.</p>
+            <a class="btn small" href="https://mobile.phoneky.com/games/?id=j4j37947" target="_blank" rel="noopener">Get it on PHONEKY ↗</a>
+          </div>
+        </article>
+        <article class="game">
+          <img src="assets/shots/app-diamondrush.png" alt="Diamond Rush gameplay in the KeyPlay app" width="720" height="1472" loading="lazy">
+          <div class="body">
+            <h3>Diamond Rush</h3>
+            <div class="chips"><span>Gameloft</span><span>240×320</span><span>MIDP 2.0</span></div>
+            <p>Gameloft's temple puzzle adventure with music. Story scenes, levels and the HUD all render as on the original phones.</p>
+            <a class="btn small" href="https://mobile.phoneky.com/games/?id=j4j73507" target="_blank" rel="noopener">Get it on PHONEKY ↗</a>
+          </div>
+        </article>
+      </div>
+      <p class="note">KeyPlay does not host or sell games. Download only games you have the right to play.</p>
+    </div>
+  </section>
+
+  <section id="features">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">Made for old games</p>
+        <h2>Set up for you, every time</h2>
+      </div>
+      <div class="features">
+        <div class="feat"><h3>Auto screen size</h3><p>Reads the game's own images and manifest to pick 128×128, 176×208, 240×320 or 320×240. You can change it from the ☰ menu.</p></div>
+        <div class="feat"><h3>Portrait or landscape</h3><p>Landscape games open sideways with the D-pad on the left and the number keys on the right.</p></div>
+        <div class="feat"><h3>Touch games</h3><p>Games made for touch phones hide the keypad and use the full screen. Tap the keypad icon to bring it back.</p></div>
+        <div class="feat"><h3>Record videos</h3><p>Press the red button while playing to record a sharp gameplay video with the game's music, then press it again to save.</p></div>
+        <div class="feat"><h3>Saves kept</h3><p>High scores and progress stay on your device between sessions.</p></div>
+        <div class="feat"><h3>Own engine</h3><p>A Java bytecode VM, MIDP 2.0 and the Nokia UI API written from scratch. That is why the app is only 168 KB.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="controls">
+    <div class="wrap controls">
+      <div class="shot"><img src="assets/shots/app-bounce.png" alt="KeyPlay keypad below the Bounce game screen" width="720" height="1472" loading="lazy"></div>
+      <div>
+        <div class="sec-head">
+          <p class="eyebrow">Controls</p>
+          <h2>A keypad that feels like the phone</h2>
+          <p class="lede">Every key sends the same code an old Nokia would, so games react the way they were made to.</p>
+        </div>
+        <dl class="keymap">
+          <div><dt>D-pad + OK</dt><dd>Move and select. Slide your thumb to change direction without lifting it.</dd></div>
+          <div><dt>Soft keys ▬ ▬</dt><dd>Left and right keys under the screen: menus, pause, back. Their labels show on the keys.</dd></div>
+          <div><dt>0–9 * #</dt><dd>Number keys. Many games also move with 2 4 6 8 and fire with 5.</dd></div>
+          <div><dt>☰</dt><dd>KeyPlay menu: resume, restart, screen size, exit.</dd></div>
+          <div><dt>Keyboard (browser)</dt><dd>Arrows, Enter = OK, F1 / F2 = soft keys, 0–9, * and #.</dd></div>
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <section id="faq">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">FAQ</p>
+        <h2>Questions people ask</h2>
+      </div>
+      <div class="faq">
+        <details>
+          <summary>Android says the app is from an unknown source. Is it safe?</summary>
+          <p>KeyPlay is not on the Play Store, so Android shows this warning for any app installed from a website. The app asks for no permissions except vibration, needs no account and shows no ads.</p>
+        </details>
+        <details>
+          <summary>I only have a .jad file. What do I do?</summary>
+          <p>A .jad file is only a description. The game itself is in the .jar file. Download the .jar version instead.</p>
+        </details>
+        <details>
+          <summary>The game looks too small or cut off.</summary>
+          <p>Open the ☰ menu while playing and choose Screen size. Pick the size the game was made for, often 240×320. The game restarts with the new size.</p>
+        </details>
+        <details>
+          <summary>Does every Java game work?</summary>
+          <p>KeyPlay supports 2D games made for MIDP 1.0/2.0 and Nokia phones. 3D games (M3G, Mascot Capsule) and online features are not supported yet. If a game fails, try another screen size from the ☰ menu.</p>
+        </details>
+        <details>
+          <summary>Can I play on a computer?</summary>
+          <p>Yes. Open Play in browser, add a .jar and use the keyboard or click the keypad. Use a recent Chrome or Edge.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>KeyPlay 2.0 · engine written from scratch (bytecode VM, MIDP 2.0, Nokia UI API) · <a href="play.html">Play in browser</a></span>
+    <span>Java is a trademark of Oracle. Game names and screenshots belong to their owners. KeyPlay is not affiliated with Oracle, Nokia, Gameloft or PHONEKY.</span>
+  </div>
+</footer>
+
+</body>
+</html>

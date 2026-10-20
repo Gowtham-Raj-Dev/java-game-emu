@@ -1,0 +1,35 @@
+﻿-2147483648 2147483647 2147483645 -2147483648 -3 -1 1
+2 -4 15 62
+-56 4464 65535 65 B
+-9223372036854775808 -2 3074457345618258602 0 1099511627776 15 -1
+-2045911175 123456788963462 7048860ddf79 gt
+1.1 1.1 3.3000002 3.3000000000000003 0.33333334 0.6666666666666666 1.0E10 1.0E-5 100.0 0.001
+3 -3 0 9223372036854775807 2147483647 3 -2
+1069547520 -4611123068473966592 3.1415927
+1.4142135623730951 5 9 -1.5
+12 o World 4 8 HELLO, WORLD -505841268
+trim|HeLLo, WorLd|truefalse|-1|true|const
+null concat: null c123.0true
+xyzyz42-123ffffffff1010
+5.2-1cba< 9
+NFE ok
+6 héllo
+3 4 9 5 true 16
+11234
+AIOOBE ok
+NPE ok
+AE / by zero
+CCE ok
+VmTest$Rect[3x4=12] true true
+VmTest$Tri[6x5=15] false true
+MyEx boom 7 VmTest$MyEx: boom
+try-finally try-catch:x-finally try-ret
+6765 501000-1 90
+5 s 3 true [s, 0, 20, 30, 40]
+2 2 five false
+-1170105035 63 -5843495416241995736 19 0.9420735 0.27707849007413665
+48 -5 1234 Tamil வணக்கம் -99 true 3.25 -1
+threads done sum=10 produced=5 alive=false
+shared=3000
+VmTest$Rect java.lang.String
+END
