@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>KeyPlay Player – Play Java Games</title>
+<meta name="description" content="Play J2ME .jar phone games in your browser with KeyPlay. Add a game, play it with the phone keypad or your keyboard, and record gameplay videos.">
+<meta name="theme-color" content="#101217">
+<link rel="icon" type="image/png" href="assets/keyplay-logo.png">
+<link rel="stylesheet" href="app/app.css">
+</head>
+<body>
+<div id="app" class="app">
+  <header class="bar">
+    <button class="brand" id="homeBtn" type="button" aria-label="Game library">
+      <img src="assets/keyplay-logo.png" alt="" width="28" height="28"><span>KeyPlay</span>
+    </button>
+    <div class="bar-title" id="gameTitle"></div>
+    <div class="bar-actions">
+      <button class="icon-btn" id="keypadBtn" type="button" title="Show / hide keypad" aria-label="Show or hide keypad" hidden>
+        <svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="3"/><path d="M8 8h.01M12 8h.01M16 8h.01M8 12h.01M12 12h.01M16 12h.01M8 16h.01M12 16h.01M16 16h.01"/></svg>
+      </button>
+      <button class="icon-btn" id="muteBtn" type="button" title="Sound on / off" aria-label="Sound on or off">
+        <svg viewBox="0 0 24 24" class="on"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg>
+        <svg viewBox="0 0 24 24" class="off"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M17 9l5 6M22 9l-5 6"/></svg>
+      </button>
+      <button class="icon-btn rec" id="recBtn" type="button" title="Record gameplay video" aria-label="Record gameplay video" hidden>
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="6"/></svg><span class="rec-time" id="recTime"></span>
+      </button>
+      <button class="icon-btn" id="fsBtn" type="button" title="Full screen" aria-label="Full screen">
+        <svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main id="library" class="library">
+    <section class="lib-head">
+      <h1>Your games</h1>
+      <p>Add any J2ME <code>.jar</code> game. KeyPlay picks the screen size, orientation and controls automatically.</p>
+    </section>
+    <div class="grid" id="gameGrid">
+      <label class="add-card" id="addCard" for="jarInput">
+        <span class="plus">+</span>
+        <span class="add-title">Add game</span>
+        <span class="add-sub">.jar file · or drop it here</span>
+        <input type="file" id="jarInput" accept=".jar,.jad,application/java-archive" multiple>
+      </label>
+    </div>
+    <p class="lib-note">Games stay on this device. Need games? Get <code>.jar</code> files from <a href="https://mobile.phoneky.com/games/" target="_blank" rel="noopener">PHONEKY</a>.</p>
+  </main>
+
+  <main id="player" class="player" hidden>
+    <div id="device" class="device portrait">
+      <div class="screen-wrap" id="screenWrap">
+        <canvas id="screen" width="240" height="320" tabindex="0" aria-label="Game screen"></canvas>
+        <div class="toast" id="toast" hidden></div>
+      </div>
+      <div class="keypad" id="keypad">
+        <div class="kp-left">
+          <button tabindex="-1" class="k soft" data-key="-6" type="button"><span class="bar-ind"></span><span class="soft-label" id="softL"></span></button>
+          <button tabindex="-1" class="k menu" data-action="menu" type="button" aria-label="KeyPlay menu"><span class="burger"></span></button>
+        </div>
+        <div class="dpad" id="dpad" aria-label="Direction pad">
+          <span class="arr up"></span><span class="arr right"></span><span class="arr down"></span><span class="arr left"></span>
+          <button tabindex="-1" class="ok" data-key="-5" type="button">OK</button>
+        </div>
+        <div class="kp-right">
+          <button tabindex="-1" class="k soft" data-key="-7" type="button"><span class="bar-ind"></span><span class="soft-label" id="softR"></span></button>
+          <button tabindex="-1" class="k clear" data-key="-8" type="button">C</button>
+        </div>
+        <div class="numpad">
+          <button tabindex="-1" class="k num" data-key="49" type="button">1<small>&nbsp;</small></button>
+          <button tabindex="-1" class="k num" data-key="50" type="button">2<small>abc</small></button>
+          <button tabindex="-1" class="k num" data-key="51" type="button">3<small>def</small></button>
+          <button tabindex="-1" class="k num" data-key="52" type="button">4<small>ghi</small></button>
+          <button tabindex="-1" class="k num" data-key="53" type="button">5<small>jkl</small></button>
+          <button tabindex="-1" class="k num" data-key="54" type="button">6<small>mno</small></button>
+          <button tabindex="-1" class="k num" data-key="55" type="button">7<small>pqrs</small></button>
+          <button tabindex="-1" class="k num" data-key="56" type="button">8<small>tuv</small></button>
+          <button tabindex="-1" class="k num" data-key="57" type="button">9<small>wxyz</small></button>
+          <button tabindex="-1" class="k num" data-key="42" type="button">*<small>&nbsp;</small></button>
+          <button tabindex="-1" class="k num" data-key="48" type="button">0<small>+</small></button>
+          <button tabindex="-1" class="k num" data-key="35" type="button">#<small>&nbsp;</small></button>
+        </div>
+      </div>
+    </div>
+    <p class="kbd-hint" id="kbdHint">Keyboard: arrows move · Enter = OK · F1 / F2 = soft keys · 0–9 · * #</p>
+  </main>
+
+  <div class="modal" id="modal" hidden>
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <h2 id="modalTitle"></h2>
+      <div id="modalBody"></div>
+    </div>
+  </div>
+</div>
+
+<script src="engine/inflate.js"></script>
+<script src="engine/zip.js"></script>
+<script src="engine/png.js"></script>
+<script src="engine/classfile.js"></script>
+<script src="engine/vm.js"></script>
+<script src="engine/jlib.js"></script>
+<script src="engine/midp-lcdui.js"></script>
+<script src="engine/midp-ui.js"></script>
+<script src="engine/midp-game.js"></script>
+<script src="engine/audio.js"></script>
+<script src="engine/midp-misc.js"></script>
+<script src="engine/launcher.js"></script>
+<script src="app/app.js"></script>
+</body>
+</html>
