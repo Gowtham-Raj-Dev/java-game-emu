@@ -53,13 +53,19 @@ public class MainActivity extends Activity {
 	private ValueCallback<Uri[]> fileCallback;
 	private boolean pageReady;
 	private String pendingJarJs;
+	private boolean gameMode;
 
 	@SuppressLint("SetJavaScriptEnabled")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+		setTheme(R.style.KeyPlayTheme_Main);
 		super.onCreate(savedInstanceState);
 		Window w = getWindow();
 		w.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+		if (Build.VERSION.SDK_INT >= 28) {
+			// use the area beside camera cutouts in landscape games
+			w.getAttributes().layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+		}
 		if (Build.VERSION.SDK_INT >= 21) {
 			w.setStatusBarColor(Color.parseColor("#171A21"));
 			w.setNavigationBarColor(Color.parseColor("#0E1014"));
@@ -175,13 +181,23 @@ public class MainActivity extends Activity {
 		fileCallback = null;
 	}
 
+	@Override
+	public void onWindowFocusChanged(boolean hasFocus) {
+		super.onWindowFocusChanged(hasFocus);
+		if (hasFocus && gameMode) hideSystemBars(true);
+	}
+
 	private void hideSystemBars(boolean on) {
 		View d = getWindow().getDecorView();
+		Window w = getWindow();
 		if (on) {
+			w.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
 			d.setSystemUiVisibility(View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY | View.SYSTEM_UI_FLAG_FULLSCREEN
-					| View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
+					| View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+					| View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
 		} else {
-			d.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
+			w.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+			d.setSystemUiVisibility(0);
 		}
 	}
 
@@ -258,16 +274,18 @@ public class MainActivity extends Activity {
 		@JavascriptInterface
 		public void setOrientation(String mode) {
 			runOnUiThread(() -> {
-				if ("landscape".equals(mode)) {
-					setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
-					hideSystemBars(true);
-				} else if ("portrait".equals(mode)) {
-					setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-					hideSystemBars(false);
-				} else {
-					setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
-					hideSystemBars(false);
-				}
+				if ("landscape".equals(mode)) setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
+				else if ("portrait".equals(mode)) setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+				else setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+			});
+		}
+
+		/** Game screen: hide status + navigation bars (swipe from the edge shows them briefly). */
+		@JavascriptInterface
+		public void setFullscreen(boolean on) {
+			runOnUiThread(() -> {
+				gameMode = on;
+				hideSystemBars(on);
 			});
 		}
 
@@ -293,8 +311,9 @@ public class MainActivity extends Activity {
 						out.write(data);
 					}
 				}
+				runOnUiThread(() -> web.evaluateJavascript("window.KeyPlayApp&&KeyPlayApp.videoSaved(true)", null));
 			} catch (IOException e) {
-				runOnUiThread(() -> Toast.makeText(MainActivity.this, "Could not save the video", Toast.LENGTH_LONG).show());
+				runOnUiThread(() -> web.evaluateJavascript("window.KeyPlayApp&&KeyPlayApp.videoSaved(false)", null));
 			}
 		}
 	}

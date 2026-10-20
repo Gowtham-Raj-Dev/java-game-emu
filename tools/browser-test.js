@@ -14,7 +14,7 @@ const [jar, out, vw, vh, ...steps] = process.argv.slice(2);
   const logs = [];
   page.on('console', (m) => logs.push('[' + m.type() + '] ' + m.text()));
   page.on('pageerror', (e) => logs.push('[pageerror] ' + e.message));
-  await page.goto('http://localhost:8080/play.html' + (jar ? '?jar=/_local/' + jar : ''), { waitUntil: 'load' });
+  await page.goto('http://localhost:8080/play.html' + (jar ? '?jar=/_local/' + jar + (process.env.KP_Q || '') : ''), { waitUntil: 'load' });
   await page.waitForFunction((j) => !j || (window.KPDebug && window.KPDebug.emu), { timeout: 15000 }, jar).catch(() => logs.push('[test] emulator did not start'));
   for (const s of steps) {
     const [cmd, a, b] = s.split(':');
@@ -40,4 +40,5 @@ const [jar, out, vw, vh, ...steps] = process.argv.slice(2);
   console.log(logs.filter((l) => !/\[debug\]/.test(l)).slice(0, 40).join('\n'));
   await browser.close();
 })().catch((e) => { console.error(e); process.exit(1); });
+
 

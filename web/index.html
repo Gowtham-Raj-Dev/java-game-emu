@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>KeyPlay – Java Games on Android &amp; Browser</title>
-<meta name="description" content="KeyPlay plays old Java (J2ME) phone games on Android and in your browser. A 168 KB app with a real phone keypad. Download .jar games from PHONEKY and play.">
+<meta name="description" content="KeyPlay plays old Java (J2ME) phone games on Android and in your browser. A 171 KB app with a real phone keypad. Download .jar games from PHONEKY and play.">
 <meta name="theme-color" content="#101217">
 <link rel="icon" type="image/png" href="assets/keyplay-logo.png">
 <meta property="og:title" content="KeyPlay – Java Games on Android &amp; Browser">
-<meta property="og:description" content="Play old Java (J2ME) phone games on Android or in the browser. 168 KB, phone keypad controls.">
+<meta property="og:description" content="Play old Java (J2ME) phone games on Android or in the browser. 171 KB, phone keypad controls.">
 <meta property="og:image" content="assets/shots/app-diamondrush.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -86,6 +86,9 @@ section { padding-block: clamp(48px, 7vw, 88px); border-top: 1px solid var(--lin
 .chips { display: flex; flex-wrap: wrap; gap: 6px; font: 400 0.75rem var(--mono); color: var(--muted); }
 .chips span { border: 1px solid var(--line); border-radius: 6px; padding: 2px 8px; }
 .note { margin-top: 16px; color: var(--muted); font-size: 0.92rem; }
+.game.wide { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); margin-bottom: 16px; }
+.game.wide img { object-fit: contain; object-position: center; }
+@media (max-width: 860px) { .game.wide { grid-template-columns: minmax(0, 1fr); } }
 
 .features { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
 .feat { border-top: 2px solid var(--key); padding-top: 14px; display: grid; gap: 6px; }
@@ -152,7 +155,7 @@ footer .wrap { display: grid; gap: 8px; }
           <a class="btn" href="play.html">Play in browser</a>
         </div>
         <div class="specs" aria-label="App details">
-          <span>168 KB</span><span>Android 5.0+</span><span>Any modern browser</span><span>MIDP 2.0 · CLDC 1.1</span><span>Nokia UI API</span>
+          <span>171 KB</span><span>Android 5.0+</span><span>Any modern browser</span><span>MIDP 2.0 · CLDC 1.1</span><span>Nokia UI API</span>
         </div>
       </div>
       <div class="phone">
@@ -192,8 +195,17 @@ footer .wrap { display: grid; gap: 8px; }
       <div class="sec-head">
         <p class="eyebrow">Tested with PHONEKY games</p>
         <h2>Real games, played in KeyPlay</h2>
-        <p class="lede">Both games below were downloaded from PHONEKY and played in the KeyPlay Android app. The screenshots are from that test.</p>
+        <p class="lede">These three games were downloaded from PHONEKY and played in the KeyPlay Android app. The screenshots are from that test.</p>
       </div>
+      <article class="game wide">
+        <img src="assets/shots/app-totalconquest.png" alt="Total Conquest battle in the KeyPlay Android app, played in landscape with touch" width="1520" height="720" loading="lazy">
+        <div class="body">
+          <h3>Total Conquest</h3>
+          <div class="chips"><span>Gameloft</span><span>480×800 · turned</span><span>touch</span><span>landscape</span></div>
+          <p>A 3 MB strategy game built for the Samsung Jet. It draws its picture sideways, so KeyPlay detects that and turns it back. The phone switches to landscape, the keypad hides, and you play by touch: city building, story scenes and battles all work.</p>
+          <a class="btn small" href="https://mobile.phoneky.com/games/?id=j4j157360" target="_blank" rel="noopener">Get it on PHONEKY ↗</a>
+        </div>
+      </article>
       <div class="tested">
         <article class="game">
           <img src="assets/shots/app-bounce.png" alt="Bounce Level 1 in the KeyPlay app" width="720" height="1472" loading="lazy">
@@ -226,11 +238,11 @@ footer .wrap { display: grid; gap: 8px; }
       </div>
       <div class="features">
         <div class="feat"><h3>Auto screen size</h3><p>Reads the game's own images and manifest to pick 128×128, 176×208, 240×320 or 320×240. You can change it from the ☰ menu.</p></div>
-        <div class="feat"><h3>Portrait or landscape</h3><p>Landscape games open sideways with the D-pad on the left and the number keys on the right.</p></div>
-        <div class="feat"><h3>Touch games</h3><p>Games made for touch phones hide the keypad and use the full screen. Tap the keypad icon to bring it back.</p></div>
-        <div class="feat"><h3>Record videos</h3><p>Press the red button while playing to record a sharp gameplay video with the game's music, then press it again to save.</p></div>
+        <div class="feat"><h3>Portrait, landscape, turned</h3><p>Landscape games open sideways with the D-pad left and number keys right. Games that draw sideways are turned upright, and you can turn any game from the menu.</p></div>
+        <div class="feat"><h3>Touch games</h3><p>Games made for touch phones hide the keypad and fill the screen. A small ☰ button stays in the corner for the menu.</p></div>
+        <div class="feat"><h3>Record videos</h3><p>Choose Record video in the ☰ menu to capture a sharp gameplay video with the game's music. Choose Stop recording to save it.</p></div>
         <div class="feat"><h3>Saves kept</h3><p>High scores and progress stay on your device between sessions.</p></div>
-        <div class="feat"><h3>Own engine</h3><p>A Java bytecode VM, MIDP 2.0 and the Nokia UI API written from scratch. That is why the app is only 168 KB.</p></div>
+        <div class="feat"><h3>Own engine</h3><p>A Java bytecode VM, MIDP 2.0 and the Nokia UI API written from scratch. That is why the app is only 171 KB.</p></div>
       </div>
     </div>
   </section>
@@ -248,8 +260,9 @@ footer .wrap { display: grid; gap: 8px; }
           <div><dt>D-pad + OK</dt><dd>Move and select. Slide your thumb to change direction without lifting it.</dd></div>
           <div><dt>Soft keys ▬ ▬</dt><dd>Left and right keys under the screen: menus, pause, back. Their labels show on the keys.</dd></div>
           <div><dt>0–9 * #</dt><dd>Number keys. Many games also move with 2 4 6 8 and fire with 5.</dd></div>
-          <div><dt>☰</dt><dd>KeyPlay menu: resume, restart, screen size, exit.</dd></div>
-          <div><dt>Keyboard (browser)</dt><dd>Arrows, Enter = OK, F1 / F2 = soft keys, 0–9, * and #.</dd></div>
+          <div><dt>☰ or Back</dt><dd>Pauses the game and opens the menu: keypad on/off, rotate screen, screen size, sound, record video, restart, exit.</dd></div>
+          <div><dt>Touch</dt><dd>Tap the game screen in touch games. Taps line up with the picture even when it is turned.</dd></div>
+          <div><dt>Keyboard (browser)</dt><dd>Arrows, Enter = OK, F1 / F2 = soft keys, 0–9, * and #, Esc = menu.</dd></div>
         </dl>
       </div>
     </div>
@@ -275,6 +288,10 @@ footer .wrap { display: grid; gap: 8px; }
           <p>Open the ☰ menu while playing and choose Screen size. Pick the size the game was made for, often 240×320. The game restarts with the new size.</p>
         </details>
         <details>
+          <summary>The game shows sideways.</summary>
+          <p>Open the ☰ menu and tap Rotate screen until it is upright (Off, Left, Right). KeyPlay remembers the choice for that game.</p>
+        </details>
+        <details>
           <summary>Does every Java game work?</summary>
           <p>KeyPlay supports 2D games made for MIDP 1.0/2.0 and Nokia phones. 3D games (M3G, Mascot Capsule) and online features are not supported yet. If a game fails, try another screen size from the ☰ menu.</p>
         </details>
@@ -289,7 +306,7 @@ footer .wrap { display: grid; gap: 8px; }
 
 <footer>
   <div class="wrap">
-    <span>KeyPlay 2.0 · engine written from scratch (bytecode VM, MIDP 2.0, Nokia UI API) · <a href="play.html">Play in browser</a></span>
+    <span>KeyPlay 2.1 · engine written from scratch (bytecode VM, MIDP 2.0, Nokia UI API) · <a href="play.html">Play in browser</a></span>
     <span>Java is a trademark of Oracle. Game names and screenshots belong to their owners. KeyPlay is not affiliated with Oracle, Nokia, Gameloft or PHONEKY.</span>
   </div>
 </footer>
