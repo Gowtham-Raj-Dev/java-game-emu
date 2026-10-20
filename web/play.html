@@ -6,22 +6,47 @@
 <title>Play Java Games Online – J2ME Emulator in Your Browser | JavaPlay</title>
 <meta name="description" content="Play J2ME .jar phone games online in your browser with JavaPlay, a free J2ME emulator. Add a game, play it with the phone keypad, touch or your keyboard, and record gameplay videos.">
 <meta name="robots" content="index, follow, max-image-preview:large">
-<link rel="canonical" href="https://javagames-emu.codelove.in/play">
+<link rel="canonical" href="https://javaplay.codelove.in/play">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="JavaPlay by CodeLove">
-<meta property="og:url" content="https://javagames-emu.codelove.in/play">
+<meta property="og:url" content="https://javaplay.codelove.in/play">
 <meta property="og:title" content="Play Java Games Online – J2ME Emulator in Your Browser | JavaPlay">
 <meta property="og:description" content="Free J2ME emulator in the browser: play .jar phone games with a real phone keypad, touch or keyboard.">
-<meta property="og:image" content="https://javagames-emu.codelove.in/assets/og.png">
+<meta property="og:image" content="https://javaplay.codelove.in/assets/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="JavaPlay – free J2ME emulator, play Java games online">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://javagames-emu.codelove.in/assets/og.png">
+<meta name="twitter:title" content="Play Java Games Online – J2ME Emulator in Your Browser | JavaPlay">
+<meta name="twitter:description" content="Free J2ME emulator in the browser: play .jar phone games with a real phone keypad, touch or keyboard.">
+<meta name="twitter:image" content="https://javaplay.codelove.in/assets/og.png">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "@id": "https://javaplay.codelove.in/play#webapp",
+  "name": "JavaPlay – Play Java Games Online",
+  "url": "https://javaplay.codelove.in/play",
+  "description": "Free J2ME emulator in your browser. Play old Java (.jar) phone games with a real phone keypad, touch or keyboard.",
+  "applicationCategory": "GameApplication",
+  "operatingSystem": "Any (modern web browser)",
+  "browserRequirements": "Requires JavaScript and a recent Chrome or Edge",
+  "isAccessibleForFree": true,
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "image": "https://javaplay.codelove.in/assets/og.png",
+  "isPartOf": { "@id": "https://javaplay.codelove.in/#website" },
+  "publisher": { "@type": "Organization", "@id": "https://codelove.in/#organization", "name": "CodeLove", "url": "https://codelove.in" }
+}
+</script>
 <meta name="theme-color" content="#14161c">
-<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
-<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
-<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
-<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="48x48" href="favicon-48x48.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
+<meta name="author" content="Gowtham">
+<link rel="author" href="https://gowtham.codelove.in">
 <link rel="stylesheet" href="app/app.css">
 </head>
 <body>
@@ -48,7 +73,6 @@
         <p>Pick a free game to start, or add your own <code>.jar</code>. Screen size, rotation and controls are set up automatically.</p>
         <button class="btn primary" id="emptyFree" type="button">Browse free games</button>
         <label class="btn" for="jarInput">Add a .jar file</label>
-        <a class="btn ghost" href="https://mobile.phoneky.com/games/" target="_blank" rel="noopener">More games on PHONEKY</a>
       </div>
       <div class="grid" id="gameGrid"></div>
       <p class="home-note" id="homeNote" hidden></p>

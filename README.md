@@ -2,10 +2,10 @@
 
 JavaPlay plays old Java (J2ME / MIDP) phone games. The game screen sits on top and a phone keypad sits below it.
 
-- **Website + browser player:** `web/`, live at **https://javagames-emu.codelove.in** (GitHub Pages, `gh-pages` = subtree of `web/`). Part of the [CodeLove](https://codelove.in) network.
+- **Website + browser player:** `web/`, live at **https://javaplay.codelove.in** (GitHub Pages, `gh-pages` = subtree of `web/`). Part of the [CodeLove](https://codelove.in) network.
 - **Android app:** `android/` (a 168 KB native shell that runs the same engine)
 
-The emulator engine is written from scratch in JavaScript. It does not use J2ME Loader or any other emulator code.
+The emulator engine is written from scratch in JavaScript. It does not use code from any other emulator.
 
 ## Engine (`web/engine/`)
 
@@ -35,7 +35,7 @@ git push origin main
 git subtree push --prefix web origin gh-pages
 ```
 
-Domain setup (once): DNS for codelove.in → `CNAME  javagames-emu  →  gowtham-raj-dev.github.io`. GitHub → Settings → Pages → Custom domain → `javagames-emu.codelove.in` → **Enforce HTTPS**. ([web/CNAME](web/CNAME) is included.) Then submit `https://javagames-emu.codelove.in/sitemap.xml` in Google Search Console.
+Domain setup (once): DNS for codelove.in → `CNAME  javaplay  →  gowtham-raj-dev.github.io`. GitHub → Settings → Pages → Custom domain → `javaplay.codelove.in` → **Enforce HTTPS**. ([web/CNAME](web/CNAME) is included.) Then submit `https://javaplay.codelove.in/sitemap.xml` in Google Search Console.
 
 SEO files: `web/sitemap.xml` (update `lastmod` when pages change), `web/robots.txt`, and the social preview `web/assets/og.png` (re-render with `node tools/og/render.js`).
 
@@ -59,4 +59,4 @@ node run-jar.js some-game.jar 8         # headless smoke test of a game
 node browser-test.js game.jar out 400 860 wait:3000 shot:menu key:-5 wait:2000 screen:game
 ```
 
-Games are not included. Download `.jar` games from sites such as PHONEKY, and only play games you have the right to use.
+Games are not included. Use the free games library on the website, or add your own `.jar` games, and only play games you have the right to use.
