@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>KeyPlay – Java Games on Android &amp; Browser</title>
-<meta name="description" content="KeyPlay plays old Java (J2ME) phone games on Android and in your browser. A 171 KB app with a real phone keypad. Download .jar games from PHONEKY and play.">
+<title>JavaPlay – Java Games on Android &amp; Browser</title>
+<meta name="description" content="JavaPlay plays old Java (J2ME) phone games on Android and in your browser. A 175 KB app with a real phone keypad. Download .jar games from PHONEKY and play.">
 <meta name="theme-color" content="#101217">
 <link rel="icon" type="image/png" href="assets/keyplay-logo.png">
-<meta property="og:title" content="KeyPlay – Java Games on Android &amp; Browser">
-<meta property="og:description" content="Play old Java (J2ME) phone games on Android or in the browser. 171 KB, phone keypad controls.">
+<meta property="og:title" content="JavaPlay – Java Games on Android &amp; Browser">
+<meta property="og:description" content="Play old Java (J2ME) phone games on Android or in the browser. 175 KB, phone keypad controls.">
 <meta property="og:image" content="assets/shots/app-diamondrush.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -123,14 +123,24 @@ footer .wrap { display: grid; gap: 8px; }
   .keymap div { grid-template-columns: 1fr; gap: 2px; }
 }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .btn { transition: none; } }
+.strip { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 14px; margin-bottom: 26px; }
+.strip a { display: block; text-decoration: none; color: var(--fg); }
+.strip .sc { position: relative; border-radius: 14px; overflow: hidden; border: 4px solid #0b0c10; box-shadow: inset 0 0 0 1px var(--line); background: #000; }
+.strip .sc::before { content: ""; display: block; padding-top: 133.33%; }
+.strip .sc img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; image-rendering: pixelated; transition: transform .2s ease; }
+.strip a:hover img { transform: scale(1.04); }
+.strip span { display: block; font-weight: 700; font-size: 0.92rem; margin-top: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@media (max-width: 860px) { .strip { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 460px) { .strip { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 </style>
 </head>
 <body>
 
 <header class="top">
   <div class="wrap">
-    <a class="brand" href="#"><img src="assets/keyplay-logo.png" alt="" width="34" height="34">KeyPlay</a>
+    <a class="brand" href="#"><img src="assets/keyplay-logo.png" alt="" width="34" height="34">JavaPlay</a>
     <nav>
+      <a class="link" href="games.html">Free games</a>
       <a class="link" href="#how">How to play</a>
       <a class="link" href="#tested">Games</a>
       <a class="link" href="#controls">Controls</a>
@@ -146,23 +156,35 @@ footer .wrap { display: grid; gap: 8px; }
       <div class="hero-copy">
         <p class="eyebrow">J2ME emulator · Android &amp; browser</p>
         <h1>Old Java phone games, <em>back in your hand.</em></h1>
-        <p class="lede">KeyPlay runs classic <code>.jar</code> games from Nokia, Sony Ericsson and Gameloft days. The game sits on top and a real phone keypad sits below it: soft keys, D-pad, OK and 0–9.</p>
+        <p class="lede">JavaPlay runs classic <code>.jar</code> games from Nokia, Sony Ericsson and Gameloft days. The game sits on top and a real phone keypad sits below it: soft keys, D-pad, OK and 0–9.</p>
         <div class="cta">
-          <a class="btn primary" href="download/KeyPlay.apk" download>
+          <a class="btn primary" href="download/JavaPlay.apk" download>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 20h14"/></svg>
             Download Android app
           </a>
-          <a class="btn" href="play.html">Play in browser</a>
+          <a class="btn" href="games.html">Play free games</a>
         </div>
         <div class="specs" aria-label="App details">
-          <span>171 KB</span><span>Android 5.0+</span><span>Any modern browser</span><span>MIDP 2.0 · CLDC 1.1</span><span>Nokia UI API</span>
+          <span>175 KB</span><span>Android 5.0+</span><span>Any modern browser</span><span>MIDP 2.0 · CLDC 1.1</span><span>Nokia UI API</span>
         </div>
       </div>
       <div class="phone">
-        <img src="assets/shots/app-diamondrush.png" alt="Diamond Rush from PHONEKY running in the KeyPlay Android app: game on top, phone keypad below" width="720" height="1472">
+        <img src="assets/shots/app-diamondrush.png" alt="Diamond Rush from PHONEKY running in the JavaPlay Android app: game on top, phone keypad below" width="720" height="1472">
       </div>
     </div>
   </div>
+
+  <section id="free">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">Free games library</p>
+        <h2><span id="freeCount">100+</span> free games, one tap to play</h2>
+        <p class="lede">Openly licensed Java games we host for you. Play them here in the browser, or open the Free games tab in the app.</p>
+      </div>
+      <div class="strip" id="strip"></div>
+      <a class="btn primary" href="games.html">See all free games</a>
+    </div>
+  </section>
 
   <section id="how">
     <div class="wrap">
@@ -173,7 +195,7 @@ footer .wrap { display: grid; gap: 8px; }
       <div class="steps">
         <div class="step">
           <span class="num">1</span>
-          <h3>Get KeyPlay</h3>
+          <h3>Get JavaPlay</h3>
           <p>On Android, download the app and open it. If Android asks, allow your browser to <em>install unknown apps</em>. On a computer, just open <a href="play.html">Play in browser</a>.</p>
         </div>
         <div class="step">
@@ -184,7 +206,7 @@ footer .wrap { display: grid; gap: 8px; }
         <div class="step">
           <span class="num">3</span>
           <h3>Add it and play</h3>
-          <p>Tap <strong>+ Add game</strong> and pick the <code>.jar</code>, or open the download with KeyPlay. Screen size, landscape and controls are set for you.</p>
+          <p>Tap <strong>+ Add game</strong> and pick the <code>.jar</code>, or open the download with JavaPlay. Screen size, landscape and controls are set for you.</p>
         </div>
       </div>
     </div>
@@ -194,30 +216,30 @@ footer .wrap { display: grid; gap: 8px; }
     <div class="wrap">
       <div class="sec-head">
         <p class="eyebrow">Tested with PHONEKY games</p>
-        <h2>Real games, played in KeyPlay</h2>
-        <p class="lede">These three games were downloaded from PHONEKY and played in the KeyPlay Android app. The screenshots are from that test.</p>
+        <h2>Real games, played in JavaPlay</h2>
+        <p class="lede">These three games were downloaded from PHONEKY and played in the JavaPlay Android app. The screenshots are from that test.</p>
       </div>
       <article class="game wide">
-        <img src="assets/shots/app-totalconquest.png" alt="Total Conquest battle in the KeyPlay Android app, played in landscape with touch" width="1520" height="720" loading="lazy">
+        <img src="assets/shots/app-totalconquest.png" alt="Total Conquest battle in the JavaPlay Android app, played in landscape with touch" width="1520" height="720" loading="lazy">
         <div class="body">
           <h3>Total Conquest</h3>
           <div class="chips"><span>Gameloft</span><span>480×800 · turned</span><span>touch</span><span>landscape</span></div>
-          <p>A 3 MB strategy game built for the Samsung Jet. It draws its picture sideways, so KeyPlay detects that and turns it back. The phone switches to landscape, the keypad hides, and you play by touch: city building, story scenes and battles all work.</p>
+          <p>A 3 MB strategy game built for the Samsung Jet. It draws its picture sideways, so JavaPlay detects that and turns it back. The phone switches to landscape, the keypad hides, and you play by touch: city building, story scenes and battles all work.</p>
           <a class="btn small" href="https://mobile.phoneky.com/games/?id=j4j157360" target="_blank" rel="noopener">Get it on PHONEKY ↗</a>
         </div>
       </article>
       <div class="tested">
         <article class="game">
-          <img src="assets/shots/app-bounce.png" alt="Bounce Level 1 in the KeyPlay app" width="720" height="1472" loading="lazy">
+          <img src="assets/shots/app-bounce.png" alt="Bounce Level 1 in the JavaPlay app" width="720" height="1472" loading="lazy">
           <div class="body">
             <h3>Bounce</h3>
             <div class="chips"><span>Nokia</span><span>128×128 auto</span><span>Nokia UI API</span></div>
-            <p>The red ball classic. KeyPlay detects its small 128×128 screen and scales it up sharply. The menu and levels play like on the Nokia original.</p>
+            <p>The red ball classic. JavaPlay detects its small 128×128 screen and scales it up sharply. The menu and levels play like on the Nokia original.</p>
             <a class="btn small" href="https://mobile.phoneky.com/games/?id=j4j37947" target="_blank" rel="noopener">Get it on PHONEKY ↗</a>
           </div>
         </article>
         <article class="game">
-          <img src="assets/shots/app-diamondrush.png" alt="Diamond Rush gameplay in the KeyPlay app" width="720" height="1472" loading="lazy">
+          <img src="assets/shots/app-diamondrush.png" alt="Diamond Rush gameplay in the JavaPlay app" width="720" height="1472" loading="lazy">
           <div class="body">
             <h3>Diamond Rush</h3>
             <div class="chips"><span>Gameloft</span><span>240×320</span><span>MIDP 2.0</span></div>
@@ -226,7 +248,7 @@ footer .wrap { display: grid; gap: 8px; }
           </div>
         </article>
       </div>
-      <p class="note">KeyPlay does not host or sell games. Download only games you have the right to play.</p>
+      <p class="note">JavaPlay does not host or sell games. Download only games you have the right to play.</p>
     </div>
   </section>
 
@@ -242,14 +264,14 @@ footer .wrap { display: grid; gap: 8px; }
         <div class="feat"><h3>Touch games</h3><p>Games made for touch phones hide the keypad and fill the screen. A small ☰ button stays in the corner for the menu.</p></div>
         <div class="feat"><h3>Record videos</h3><p>Choose Record video in the ☰ menu to capture a sharp gameplay video with the game's music. Choose Stop recording to save it.</p></div>
         <div class="feat"><h3>Saves kept</h3><p>High scores and progress stay on your device between sessions.</p></div>
-        <div class="feat"><h3>Own engine</h3><p>A Java bytecode VM, MIDP 2.0 and the Nokia UI API written from scratch. That is why the app is only 171 KB.</p></div>
+        <div class="feat"><h3>Own engine</h3><p>A Java bytecode VM, MIDP 2.0 and the Nokia UI API written from scratch. That is why the app is only 175 KB.</p></div>
       </div>
     </div>
   </section>
 
   <section id="controls">
     <div class="wrap controls">
-      <div class="shot"><img src="assets/shots/app-bounce.png" alt="KeyPlay keypad below the Bounce game screen" width="720" height="1472" loading="lazy"></div>
+      <div class="shot"><img src="assets/shots/app-bounce.png" alt="JavaPlay keypad below the Bounce game screen" width="720" height="1472" loading="lazy"></div>
       <div>
         <div class="sec-head">
           <p class="eyebrow">Controls</p>
@@ -277,7 +299,7 @@ footer .wrap { display: grid; gap: 8px; }
       <div class="faq">
         <details>
           <summary>Android says the app is from an unknown source. Is it safe?</summary>
-          <p>KeyPlay is not on the Play Store, so Android shows this warning for any app installed from a website. The app asks for no permissions except vibration, needs no account and shows no ads.</p>
+          <p>JavaPlay is not on the Play Store, so Android shows this warning for any app installed from a website. The app asks for no permissions except vibration, needs no account and shows no ads.</p>
         </details>
         <details>
           <summary>I only have a .jad file. What do I do?</summary>
@@ -289,11 +311,11 @@ footer .wrap { display: grid; gap: 8px; }
         </details>
         <details>
           <summary>The game shows sideways.</summary>
-          <p>Open the ☰ menu and tap Rotate screen until it is upright (Off, Left, Right). KeyPlay remembers the choice for that game.</p>
+          <p>Open the ☰ menu and tap Rotate screen until it is upright (Off, Left, Right). JavaPlay remembers the choice for that game.</p>
         </details>
         <details>
           <summary>Does every Java game work?</summary>
-          <p>KeyPlay supports 2D games made for MIDP 1.0/2.0 and Nokia phones. 3D games (M3G, Mascot Capsule) and online features are not supported yet. If a game fails, try another screen size from the ☰ menu.</p>
+          <p>JavaPlay supports 2D games made for MIDP 1.0/2.0 and Nokia phones. 3D games (M3G, Mascot Capsule) and online features are not supported yet. If a game fails, try another screen size from the ☰ menu.</p>
         </details>
         <details>
           <summary>Can I play on a computer?</summary>
@@ -306,10 +328,18 @@ footer .wrap { display: grid; gap: 8px; }
 
 <footer>
   <div class="wrap">
-    <span>KeyPlay 2.1 · engine written from scratch (bytecode VM, MIDP 2.0, Nokia UI API) · <a href="play.html">Play in browser</a></span>
-    <span>Java is a trademark of Oracle. Game names and screenshots belong to their owners. KeyPlay is not affiliated with Oracle, Nokia, Gameloft or PHONEKY.</span>
+    <span>JavaPlay 2.1 · engine written from scratch (bytecode VM, MIDP 2.0, Nokia UI API) · <a href="play.html">Play in browser</a></span>
+    <span>Java is a trademark of Oracle. Game names and screenshots belong to their owners. JavaPlay is not affiliated with Oracle, Nokia, Gameloft or PHONEKY.</span>
   </div>
 </footer>
 
+<script>
+fetch('games/catalog.json').then((r) => r.json()).then((d) => {
+  document.getElementById('freeCount').textContent = d.count;
+  const pick = d.games.filter((g) => g.shot).sort(() => Math.random() - 0.5).slice(0, 6);
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  document.getElementById('strip').innerHTML = pick.map((g) => '<a href="play.html?game=' + encodeURIComponent(g.id) + '"><div class="sc"><img loading="lazy" alt="" src="' + esc(g.shot) + '"></div><span>' + esc(g.name) + '</span></a>').join('');
+}).catch(() => {});
+</script>
 </body>
 </html>

@@ -449,7 +449,10 @@
       'drawImage(Ljavax/microedition/lcdui/Image;III)V': (t, [g, im, x, y, a]) => drawImageAt(g, im, x, y, a),
       'drawRegion(Ljavax/microedition/lcdui/Image;IIIIIIII)V': (t, [g, im, sx, sy, w, h, tr, dx, dy, a]) => {
         if (im === null) thr(t, 'java/lang/NullPointerException');
-        if (sx < 0 || sy < 0 || sx + w > im._w || sy + h > im._h) thr(t, 'java/lang/IllegalArgumentException', 'region out of bounds');
+        // real phones clip a region that runs past the image edge instead of throwing
+        if (sx < 0) { w += sx; sx = 0; } if (sy < 0) { h += sy; sy = 0; }
+        if (sx + w > im._w) w = im._w - sx; if (sy + h > im._h) h = im._h - sy;
+        if (w <= 0 || h <= 0) return;
         const swap = tr === 5 || tr === 6 || tr === 7 || tr === 4;
         const dw = swap ? h : w, dh = swap ? w : h;
         if (a === 0) a = TOP | LEFT;
@@ -643,6 +646,8 @@
     if (next) {
       next._shown = true;
       if (isCanvas(vm, next)) {
+        // like real phones: tell the canvas its size before it is first shown (games set up layout there)
+        if (!next._sized && vm.host.screen) { next._sized = true; post(vm, { type: 'invoke', m: vm.findVirtual(next, 'sizeChanged(II)V'), args: [next, vm.host.screen.w, vm.host.screen.h] }); }
         post(vm, { type: 'invoke', m: vm.findVirtual(next, 'showNotify()V'), args: [next] });
         if (vm.host.onCanvasShown) vm.host.onCanvasShown(next);
       } else if (vm.host.onScreenShown) vm.host.onScreenShown(next);
@@ -750,7 +755,12 @@
       'hasPointerMotionEvents()Z': (t) => (t.vm.host.touch ? 1 : 0),
       'hasRepeatEvents()Z': () => 1,
       'isDoubleBuffered()Z': () => 1,
-      'setFullScreenMode(Z)V': (t, [o, f]) => { o._full = !!f; if (t.vm.host.onFullScreen) t.vm.host.onFullScreen(o, !!f); },
+      'setFullScreenMode(Z)V': (t, [o, f]) => {
+        o._full = !!f;
+        if (t.vm.host.onFullScreen) t.vm.host.onFullScreen(o, !!f);
+        const s = t.vm.host.screen;
+        if (s) { o._sized = true; post(t.vm, { type: 'invoke', m: t.vm.findVirtual(o, 'sizeChanged(II)V'), args: [o, s.w, s.h] }); }
+      },
       'keyPressed(I)V': () => {}, 'keyReleased(I)V': () => {}, 'keyRepeated(I)V': () => {},
       'pointerPressed(II)V': () => {}, 'pointerReleased(II)V': () => {}, 'pointerDragged(II)V': () => {},
       'showNotify()V': () => {}, 'hideNotify()V': () => {},

@@ -1,6 +1,6 @@
-# KeyPlay – J2ME emulator for Android and the browser
+# JavaPlay – J2ME emulator for Android and the browser
 
-KeyPlay plays old Java (J2ME / MIDP) phone games. The game screen sits on top and a phone keypad sits below it.
+JavaPlay plays old Java (J2ME / MIDP) phone games. The game screen sits on top and a phone keypad sits below it.
 
 - **Website + browser player:** `web/` (published with GitHub Pages)
 - **Android app:** `android/` (a 168 KB native shell that runs the same engine)

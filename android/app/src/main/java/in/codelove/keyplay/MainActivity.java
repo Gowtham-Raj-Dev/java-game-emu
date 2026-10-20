@@ -42,7 +42,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 /**
- * KeyPlay: native shell around the KeyPlay J2ME engine (web/engine, written in JavaScript).
+ * JavaPlay: native shell around the JavaPlay J2ME engine (web/engine, written in JavaScript).
  * Assets are served from a private https origin so storage, audio and recording work like a website.
  */
 public class MainActivity extends Activity {
@@ -101,7 +101,7 @@ public class MainActivity extends Activity {
 		handleIntent(intent);
 	}
 
-	// "Open with KeyPlay" from a file manager or the browser's downloads
+	// "Open with JavaPlay" from a file manager or the browser's downloads
 	private void handleIntent(Intent intent) {
 		if (intent == null || !Intent.ACTION_VIEW.equals(intent.getAction()) || intent.getData() == null) return;
 		Uri uri = intent.getData();
@@ -297,7 +297,7 @@ public class MainActivity extends Activity {
 					ContentValues cv = new ContentValues();
 					cv.put(MediaStore.MediaColumns.DISPLAY_NAME, name);
 					cv.put(MediaStore.MediaColumns.MIME_TYPE, mime == null || mime.isEmpty() ? "video/webm" : mime.split(";")[0]);
-					cv.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_MOVIES + "/KeyPlay");
+					cv.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_MOVIES + "/JavaPlay");
 					Uri uri = getContentResolver().insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, cv);
 					if (uri == null) throw new IOException("insert failed");
 					try (OutputStream out = getContentResolver().openOutputStream(uri)) {
@@ -305,7 +305,7 @@ public class MainActivity extends Activity {
 						out.write(data);
 					}
 				} else {
-					File dir = new File(getExternalFilesDir(Environment.DIRECTORY_MOVIES), "KeyPlay");
+					File dir = new File(getExternalFilesDir(Environment.DIRECTORY_MOVIES), "JavaPlay");
 					if (!dir.exists() && !dir.mkdirs()) throw new IOException("mkdir failed");
 					try (FileOutputStream out = new FileOutputStream(new File(dir, name))) {
 						out.write(data);

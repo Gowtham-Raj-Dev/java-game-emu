@@ -412,12 +412,12 @@
       },
       'drawPolygon([II[IIII)V': (t, [dg, xs, xo, ys, yo, n, argb]) => { const g = dg._g; const c = KP.gPrep(g); c.strokeStyle = argbCss(argb); polyPath(c, g, xs, xo, ys, yo, n); c.stroke(); },
       'fillPolygon([II[IIII)V': (t, [dg, xs, xo, ys, yo, n, argb]) => { const g = dg._g; const c = dgFill(dg, argb); polyPath(c, g, xs, xo, ys, yo, n); c.fill(); },
-      'drawPixels([IZIIIIIII)V': (t, [dg, px, trans, off, scan, x, y, w, h, manip, fmt]) => {
+      'drawPixels([IZIIIIIIII)V': (t, [dg, px, trans, off, scan, x, y, w, h, manip, fmt]) => {
         const out = new Int32Array(w * h);
         for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) out[j * w + i] = toARGB(fmt, px[off + j * scan + i]);
         drawPixelsARGB(dg, out, trans || fmt === 8888, x, y, w, h);
       },
-      'drawPixels([SZIIIIIII)V': (t, [dg, px, trans, off, scan, x, y, w, h, manip, fmt]) => {
+      'drawPixels([SZIIIIIIII)V': (t, [dg, px, trans, off, scan, x, y, w, h, manip, fmt]) => {
         const out = new Int32Array(w * h);
         for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) out[j * w + i] = toARGB(fmt, px[off + j * scan + i] & 0xffff);
         drawPixelsARGB(dg, out, trans || fmt === 4444, x, y, w, h);

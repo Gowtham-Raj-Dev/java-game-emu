@@ -1,4 +1,4 @@
-/* KeyPlay engine – game launcher: profile detection (resolution / orientation / touch) and MIDlet boot. */
+/* JavaPlay engine – game launcher: profile detection (resolution / orientation / touch) and MIDlet boot. */
 (function (KP) {
   'use strict';
 
@@ -106,7 +106,16 @@
         touch: true,
         muted: false,
       }, opts.host || {});
-      this.host.screen = { w, h, canvas: screenCanvas };
+      // Double buffering: the game draws into `canvas` (back buffer). Only finished frames
+      // (end of paint() / flushGraphics()) are copied to `front`, which is what the UI shows.
+      // Without this, a paint() that spans several VM time slices shows half-drawn frames (flicker).
+      const front = KP.makeCanvas(w, h);
+      const fctx = front.getContext('2d');
+      fctx.imageSmoothingEnabled = false;
+      fctx.fillStyle = '#000'; fctx.fillRect(0, 0, w, h);
+      const userPresent = this.host.present;
+      this.host.present = () => { fctx.drawImage(screenCanvas, 0, 0); userPresent(); };
+      this.host.screen = { w, h, canvas: screenCanvas, front };
       this.vm = new KP.VM({
         jar: this.jar, props: this.props, host: this.host,
         log: opts.log || ((s) => console.log('[game] ' + s)),

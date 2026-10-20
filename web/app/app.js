@@ -1,4 +1,4 @@
-/* KeyPlay player UI – game library, engine host, keypad / keyboard / touch input, rotation, recording. */
+/* JavaPlay player UI – game library, engine host, keypad / keyboard / touch input, rotation, recording. */
 (function () {
   'use strict';
   const KP = window.KP;
@@ -125,16 +125,17 @@
     const list = (await DB.all()).sort((a, b) => (b.played || b.added) - (a.played || a.added));
     const grid = $('gameGrid');
     grid.innerHTML = '';
+    libCount = list.length;
     $('empty').hidden = list.length > 0;
-    $('fab').hidden = list.length === 0;
+    $('fab').hidden = list.length === 0 || !$('storeBody').hidden;
     for (const g of list) {
       const p = profileOf(g);
       const card = document.createElement('div');
       card.className = 'card'; card.tabIndex = 0; card.setAttribute('role', 'button');
       card.setAttribute('aria-label', 'Play ' + g.name);
-      card.innerHTML = (g.icon ? '<img alt="" src="' + g.icon + '">' : '<span class="noicon"></span>') +
+      card.innerHTML = (g.shot ? '<span class="shot lib"><img alt="" src="' + g.shot + '">' + (g.icon ? '<img class="ico" alt="" src="' + g.icon + '">' : '') + '</span>' : g.icon ? '<img alt="" src="' + g.icon + '">' : '<span class="noicon"></span>') +
         '<span class="name"></span><span class="meta"></span><button class="more" type="button" aria-label="Game options">⋮</button>';
-      if (!g.icon) card.querySelector('.noicon').textContent = (g.name[0] || '?').toUpperCase();
+      if (!g.icon && !g.shot) card.querySelector('.noicon').textContent = (g.name[0] || '?').toUpperCase();
       card.querySelector('.name').textContent = g.name;
       card.querySelector('.meta').textContent = p.w + '×' + p.h + (p.rotate ? ' · turned' : '') + (p.touch ? ' · touch' : '');
       let pressTimer = null, longPressed = false;
@@ -316,7 +317,7 @@
   function frame() {
     if (emu && (dirty || recorder)) {
       dirty = false;
-      const src = emu.host.screen.canvas;
+      const src = emu.host.screen.front;
       const s = scale;
       dctx.imageSmoothingEnabled = false;
       if (prof.rotate === 270) { dctx.setTransform(0, -s, s, 0, 0, prof.w * s); dctx.drawImage(src, 0, 0); dctx.setTransform(1, 0, 0, 1, 0, 0); }
@@ -573,7 +574,7 @@
       if (recDest) { try { KP.audio.master.disconnect(recDest); } catch (e) { /* ignore */ } recDest = null; }
       const blob = new Blob(recChunks, { type: recorder.mimeType || 'video/webm' });
       const ext = (recorder.mimeType || '').indexOf('mp4') >= 0 ? 'mp4' : 'webm';
-      const name = (current ? current.name : 'keyplay').replace(/[^\w-]+/g, '_') + '-' + new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-') + '.' + ext;
+      const name = (current ? current.name : 'javaplay').replace(/[^\w-]+/g, '_') + '-' + new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-') + '.' + ext;
       recorder = null;
       saveBlob(blob, name);
     };
@@ -596,6 +597,117 @@
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(a.href), 10000);
     toast('Video saved: ' + name, 4000);
+  }
+
+  // ---------------- free games store ----------------
+  const SITE = 'https://gowtham-raj-dev.github.io/java-game-emu/';
+  const BASE = (IN_APP || location.protocol === 'file:') ? SITE : '';
+  let catalog = null, storeCat = 'All', storeQuery = '', libCount = 0;
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+  async function loadCatalog() {
+    if (catalog) return catalog;
+    const r = await fetch(BASE + 'games/catalog.json', { cache: 'no-cache' });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    catalog = await r.json();
+    $('freeCount').textContent = catalog.count;
+    return catalog;
+  }
+
+  function setTab(free) {
+    $('tabMine').setAttribute('aria-selected', String(!free));
+    $('tabFree').setAttribute('aria-selected', String(free));
+    $('homeBody').hidden = free;
+    $('storeBody').hidden = !free;
+    $('fab').hidden = free || libCount === 0;
+    if (free) renderStore();
+  }
+  $('tabMine').addEventListener('click', () => setTab(false));
+  $('tabFree').addEventListener('click', () => setTab(true));
+  $('emptyFree').addEventListener('click', () => setTab(true));
+
+  async function renderStore() {
+    const msg = $('storeMsg');
+    try { await loadCatalog(); } catch (e) {
+      msg.hidden = false;
+      msg.textContent = 'Could not load the free games list. Check your internet connection and try again.';
+      return;
+    }
+    msg.hidden = true;
+    if (!$('storeChips').children.length) {
+      const names = ['All'].concat(Object.keys(catalog.categories).sort());
+      $('storeChips').innerHTML = names.map((c) => '<button class="chip" type="button" data-cat="' + esc(c) + '" aria-pressed="' + (c === storeCat) + '">' + esc(c) + '</button>').join('');
+    }
+    const installed = new Set((await DB.all()).map((g) => g.catalogId).filter(Boolean));
+    const words = storeQuery.toLowerCase().split(/\s+/).filter(Boolean);
+    const list = catalog.games.filter((g) => (storeCat === 'All' || g.cat === storeCat) && words.every((w) => (g.name + ' ' + g.cat + ' ' + g.desc).toLowerCase().indexOf(w) >= 0));
+    $('storeGrid').innerHTML = list.map((g) =>
+      '<button class="scard" type="button" data-id="' + esc(g.id) + '">' +
+      '<span class="shot">' + (g.shot ? '<img loading="lazy" alt="" src="' + esc(BASE + g.shot) + '">' : '') +
+      (g.icon ? '<img class="ico" loading="lazy" alt="" src="' + esc(BASE + g.icon) + '">' : '') +
+      (installed.has(g.id) ? '<span class="got">✓ added</span>' : '') + '</span>' +
+      '<span class="nm">' + esc(g.name) + '</span><span class="ct">' + esc(g.cat) + '</span></button>').join('');
+    if (!list.length) { msg.hidden = false; msg.textContent = 'No games match that search.'; }
+  }
+  $('storeChips').addEventListener('click', (e) => {
+    const b = e.target.closest('.chip');
+    if (!b) return;
+    storeCat = b.dataset.cat;
+    $('storeChips').querySelectorAll('.chip').forEach((c) => c.setAttribute('aria-pressed', String(c === b)));
+    renderStore();
+  });
+  $('storeQ').addEventListener('input', (e) => { storeQuery = e.target.value; renderStore(); });
+  $('storeGrid').addEventListener('click', (e) => {
+    const b = e.target.closest('.scard');
+    if (b && catalog) storeDetail(catalog.games.find((g) => g.id === b.dataset.id));
+  });
+
+  function storeDetail(g) {
+    if (!g) return;
+    sheet(g.name, (body, close) => {
+      const d = document.createElement('div'); d.className = 'detail';
+      d.innerHTML = '<span class="shot">' + (g.shot ? '<img alt="" src="' + esc(BASE + g.shot) + '">' : '') + '</span>' +
+        '<div><p>' + esc(g.desc) + '</p><small>' + esc(g.cat) + ' · ' + g.kb + ' KB<br>By ' + esc(g.author) + '<br>License: ' + esc(g.license) +
+        ' · <a href="' + esc(g.source) + '" target="_blank" rel="noopener">source</a></small></div>';
+      body.appendChild(d);
+      const prog = document.createElement('div'); prog.className = 'progress'; prog.hidden = true; prog.innerHTML = '<span></span>';
+      body.appendChild(prog);
+      const play = opt('', '▶  Play', async () => {
+        play.disabled = true; prog.hidden = false;
+        const ok = await playCatalogGame(g);
+        if (ok) close(); else { play.disabled = false; prog.hidden = true; }
+      }, 'primary');
+      body.appendChild(play);
+      body.appendChild(opt('', 'Close', () => close()));
+    });
+  }
+
+  async function playCatalogGame(g) {
+    const have = (await DB.all()).find((r) => r.catalogId === g.id);
+    if (have) { startGame(have); return true; }
+    try {
+      const r = await fetch(BASE + g.jar);
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const bytes = new Uint8Array(await r.arrayBuffer());
+      const rec = await addJarBytes(g.jar.split('/').pop(), bytes);
+      if (!rec) return false;
+      rec.catalogId = g.id;
+      rec.name = g.name;
+      if (g.shot) rec.shot = BASE + g.shot;
+      const o = {};
+      if (g.size) { const m = /^(\d+)x(\d+)$/.exec(g.size); if (m) { o.w = +m[1]; o.h = +m[2]; } }
+      if (g.rotate) o.rotate = g.rotate;
+      if (g.controls === 'touch') o.touch = true;
+      if (Object.keys(o).length) rec.override = o;
+      await DB.put(rec);
+      renderLibrary();
+      startGame(rec);
+      return true;
+    } catch (e) {
+      toast('Download failed. Check your internet connection.', 3500);
+      note('Could not download ' + g.name + '. Check your internet connection.');
+      return false;
+    }
   }
 
   // ---------------- lifecycle ----------------
@@ -626,13 +738,13 @@
       if (emu) { pauseMenu(); return true; }
       return false;
     },
-    videoSaved(ok) { toast(ok ? 'Video saved to Movies/KeyPlay' : 'Could not save the video', 3500); },
+    videoSaved(ok) { toast(ok ? 'Video saved to Movies/JavaPlay' : 'Could not save the video', 3500); },
   };
 
   (async function init() {
     if (typeof BigInt === 'undefined' || typeof BigInt64Array === 'undefined') {
       $('empty').hidden = false;
-      note('This browser is too old for KeyPlay. Update Chrome or "Android System WebView" from the Play Store.');
+      note('This browser is too old for JavaPlay. Update Chrome or "Android System WebView" from the Play Store.');
       return;
     }
     await DB.open();
@@ -657,6 +769,19 @@
           startGame(rec);
         }
       } catch (e) { note('Could not load ' + url); }
+      return;
     }
+    // ?game=<catalog id> (Play buttons on the website)
+    const gid = q.get('game');
+    if (gid) {
+      try {
+        const cat = await loadCatalog();
+        const g = cat.games.find((x) => x.id === gid);
+        if (g) { await playCatalogGame(g); return; }
+      } catch (e) { /* fall through to the library */ }
+    }
+    // first run: show the free games so there is something to play right away
+    if (libCount === 0) setTab(true);
+    else loadCatalog().catch(() => {});
   })();
 })();
