@@ -7,35 +7,35 @@
 <meta name="description" content="163 free J2ME Java phone games you can play online in your browser or in the JavaPlay Android app. Puzzle, arcade, card and board games, all openly licensed, no sign-up.">
 <meta name="keywords" content="free java games, play java games online, j2me games, java phone games, jar games download, old mobile games online, nokia java games, free j2me games, codelove">
 <meta name="robots" content="index, follow, max-image-preview:large">
-<link rel="canonical" href="https://javagame-emu.codelove.in/games.html">
+<link rel="canonical" href="https://javagames-emu.codelove.in/games.html">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="JavaPlay by CodeLove">
 <meta property="og:locale" content="en_US">
-<meta property="og:url" content="https://javagame-emu.codelove.in/games.html">
+<meta property="og:url" content="https://javagames-emu.codelove.in/games.html">
 <meta property="og:title" content="163 Free Java Games – Play J2ME Phone Games Online | JavaPlay">
 <meta property="og:description" content="Free, openly licensed Java phone games. Play online in your browser or in the JavaPlay Android app.">
-<meta property="og:image" content="https://javagame-emu.codelove.in/assets/og.png">
+<meta property="og:image" content="https://javagames-emu.codelove.in/assets/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="163 Free Java Games – Play J2ME Phone Games Online | JavaPlay">
 <meta name="twitter:description" content="Free, openly licensed Java phone games. Play online in your browser or in the JavaPlay Android app.">
-<meta name="twitter:image" content="https://javagame-emu.codelove.in/assets/og.png">
+<meta name="twitter:image" content="https://javagames-emu.codelove.in/assets/og.png">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "CollectionPage",
-  "@id": "https://javagame-emu.codelove.in/games.html",
+  "@id": "https://javagames-emu.codelove.in/games.html",
   "name": "Free Java Games",
-  "url": "https://javagame-emu.codelove.in/games.html",
+  "url": "https://javagames-emu.codelove.in/games.html",
   "description": "163 free, openly licensed J2ME Java phone games to play online or on Android.",
-  "isPartOf": { "@id": "https://javagame-emu.codelove.in/#website" },
+  "isPartOf": { "@id": "https://javagames-emu.codelove.in/#website" },
   "publisher": { "@type": "Organization", "@id": "https://codelove.in/#organization", "name": "CodeLove", "url": "https://codelove.in" },
   "breadcrumb": {
     "@type": "BreadcrumbList",
     "itemListElement": [
-      { "@type": "ListItem", "position": 1, "name": "JavaPlay", "item": "https://javagame-emu.codelove.in/" },
-      { "@type": "ListItem", "position": 2, "name": "Free Java Games", "item": "https://javagame-emu.codelove.in/games.html" }
+      { "@type": "ListItem", "position": 1, "name": "JavaPlay", "item": "https://javagames-emu.codelove.in/" },
+      { "@type": "ListItem", "position": 2, "name": "Free Java Games", "item": "https://javagames-emu.codelove.in/games.html" }
     ]
   }
 }
@@ -48,6 +48,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="assets/footer.css">
 <style>
 /* Layout: sticky header + search/filter bar, responsive card grid of "phone screen" thumbnails, detail sheet */
 :root {
@@ -113,12 +114,6 @@ a { color: var(--key); }
 .card .acts .btn.dl { flex: none; width: 42px; padding: 0; }
 .empty { color: var(--muted); padding: 40px 0; text-align: center; }
 
-.credit { color: var(--muted); font-size: 0.88rem; border-top: 1px solid var(--line); padding-block: 26px calc(30px + env(safe-area-inset-bottom, 0px)); }
-.network { display: grid; gap: 10px; padding-bottom: 18px; margin-bottom: 14px; border-bottom: 1px solid var(--line); }
-.network h2 { margin: 0; font: 600 0.75rem/1 var(--mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--fg); }
-.network ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px 20px; }
-.network a { color: var(--muted); text-decoration: none; }
-.network a:hover { color: var(--key); }
 
 /* detail sheet */
 .modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 30; background: rgba(5, 6, 9, 0.7); display: flex; align-items: center; justify-content: center; padding: 16px; }
@@ -175,22 +170,62 @@ a { color: var(--key); }
   <p class="empty" id="empty" hidden>No games match that search.</p>
 </main>
 
-<footer class="credit">
+<footer class="site-footer">
   <div class="wrap">
-    <nav class="network" aria-label="CodeLove network">
-      <h2>CodeLove network</h2>
-      <ul>
-        <li><a href="https://codelove.in">CodeLove</a></li>
-        <li><a href="https://models.codelove.in">Free 3D Models</a></li>
-        <li><a href="https://games.codelove.in">Free 3D Games</a></li>
-        <li><a href="https://downloader.codelove.in">Instagram &amp; Pinterest Downloader</a></li>
-        <li><a href="https://linkinbio.codelove.in">Link in Bio</a></li>
-        <li><a href="https://videotogif.codelove.in">Video to GIF</a></li>
-        <li><a href="https://videotoimages.codelove.in">Video to Images</a></li>
-        <li><a href="https://utubeflow.codelove.in">Free YouTube Automation</a></li>
-      </ul>
-    </nav>
-    Games are by their authors and shared under the license shown on each game. Open a game to see its author, license and source code. <a href="index.html">Back to JavaPlay</a> · A <a href="https://codelove.in">CodeLove</a> product
+    <div class="sf-top">
+      <div class="sf-brand">
+        <a class="brand" href="index.html"><img src="assets/javaplay-logo.png" alt="" width="34" height="34" loading="lazy">JavaPlay</a>
+        <p>Free J2ME emulator. Play old Java phone games in your browser or on Android, with a real phone keypad.</p>
+        <div class="sf-chips"><span>Free</span><span>No sign-up</span><span>177 KB app</span></div>
+      </div>
+      <nav aria-label="Play">
+        <h3>Play</h3>
+        <ul>
+          <li><a href="play.html">Play in browser</a></li>
+          <li><a href="games.html">Free Java games</a></li>
+          <li><a href="download/JavaPlay.apk" download>Android app</a></li>
+        </ul>
+      </nav>
+      <nav aria-label="Help">
+        <h3>Help</h3>
+        <ul>
+          <li><a href="index.html#how">How to play</a></li>
+          <li><a href="index.html#controls">Controls</a></li>
+          <li><a href="index.html#faq">FAQ</a></li>
+        </ul>
+      </nav>
+      <nav aria-label="Project">
+        <h3>Project</h3>
+        <ul>
+          <li><a href="https://github.com/Gowtham-Raj-Dev/java-game-emu" target="_blank" rel="noopener">Source code</a></li>
+          <li><a href="index.html#features">Features</a></li>
+          <li><a href="https://codelove.in" target="_blank" rel="noopener">About CodeLove</a></li>
+        </ul>
+      </nav>
+    </div>
+
+    <div class="sf-network">
+      <nav aria-label="CodeLove network">
+        <h3>CodeLove network</h3>
+        <ul>
+          <li><a href="https://codelove.in" target="_blank" rel="noopener">CodeLove</a></li>
+          <li><a href="https://models.codelove.in" target="_blank" rel="noopener">Free 3D Models</a></li>
+          <li><a href="https://games.codelove.in" target="_blank" rel="noopener">Free 3D Games</a></li>
+          <li><a href="https://downloader.codelove.in" target="_blank" rel="noopener">Instagram &amp; Pinterest Downloader</a></li>
+          <li><a href="https://linkinbio.codelove.in" target="_blank" rel="noopener">Link in Bio</a></li>
+          <li><a href="https://videotogif.codelove.in" target="_blank" rel="noopener">Video to GIF</a></li>
+          <li><a href="https://videotoimages.codelove.in" target="_blank" rel="noopener">Video to Images</a></li>
+          <li><a href="https://utubeflow.codelove.in" target="_blank" rel="noopener">Free YouTube Automation</a></li>
+        </ul>
+      </nav>
+      <a class="sf-codelove" href="https://codelove.in" target="_blank" rel="noopener noreferrer" aria-label="CodeLove — codelove.in"><img src="assets/codelove-footer.png" alt="CodeLove" width="704" height="144" loading="lazy"></a>
+    </div>
+
+    <div class="sf-bottom">
+      <p>© 2026 JavaPlay. All rights reserved.</p>
+      <p>Built with <span class="heart" aria-label="love">♥</span> by <strong><a href="https://gowtham.codelove.in" target="_blank" rel="noopener noreferrer">Gowtham</a></strong> · <strong><a href="https://codelove.in" target="_blank" rel="noopener noreferrer">CodeLove</a></strong></p>
+    </div>
+    <p class="sf-legal">Games are by their authors and shared under the license shown on each game. Open a game to see its author, license and source code.</p>
   </div>
 </footer>
 
