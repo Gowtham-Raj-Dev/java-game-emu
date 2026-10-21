@@ -1,0 +1,14 @@
+{
+    "versionCode": 6,
+    "versionName": "2.4.0",
+    "kb": 234,
+    "apk": "https://javaplay.codelove.in/download/JavaPlay.apk?v=6",
+    "notes": [
+        "Update right inside the app: no need to visit the website again",
+        "Rotate button: play any game with the phone sideways",
+        "Landscape layout: D-pad left, game in the centre, keys right",
+        "8 keypad themes, button colours, button and D-pad size",
+        "Keyboard and game-controller key mapping",
+        "Free games now download inside the app"
+    ]
+}

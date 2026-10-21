@@ -5,7 +5,7 @@
   const $ = (id) => document.getElementById(id);
   const Bridge = window.JavaPlayAndroid || null; // present inside the Android app
   const IN_APP = !!Bridge;
-  const VERSION = '2.3.0';
+  const VERSION = (Bridge && Bridge.versionName && Bridge.versionName()) || '2.4.0';
 
   // ---------------- IndexedDB game library ----------------
   const DB = {
@@ -774,10 +774,77 @@
         '<p class="fine">The Java engine (bytecode VM, MIDP 2.0, Nokia UI) is written from scratch for JavaPlay. ' +
         'Free games in the catalog belong to their authors and are shared under their own open licenses; see each game\'s details.<br>' +
         'Made with <span class="heart">♥</span> by Gowtham · © ' + new Date().getFullYear() + ' CodeLove</p>');
+      if (CAN_UPDATE) body.appendChild(opt('⟳', 'Check for updates', () => { close(); checkUpdate(true); }));
+      else if (!IN_APP) body.insertAdjacentHTML('beforeend', '<a class="btn" style="width:100%;margin-bottom:8px" href="' + SITE + 'download/JavaPlay.apk" download>Get the Android app</a>');
       body.appendChild(opt('', 'Close', () => close(), 'primary'));
     });
   }
   $('aboutBtn').addEventListener('click', () => aboutSheet());
+
+  // ---------------- in-app updates (Android) ----------------
+  // web/version.json is written by the Gradle task publishApk together with web/download/JavaPlay.apk
+  const CAN_UPDATE = !!(Bridge && Bridge.versionCode && Bridge.downloadUpdate);
+  let updateUi = null; // { bar, label, btn } while the update sheet is open
+  async function fetchLatest() {
+    const r = await fetch(SITE + 'version.json?t=' + Date.now(), { cache: 'no-store' });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    return r.json();
+  }
+  async function checkUpdate(manual) {
+    if (!CAN_UPDATE) return;
+    let v;
+    try { v = await fetchLatest(); } catch (e) { if (manual) toast('Could not check for updates. Check your internet connection.', 3500); return; }
+    const have = Bridge.versionCode();
+    if (!(v.versionCode > have)) { if (manual) toast('You have the latest version (' + VERSION + ').', 3000); return; }
+    if (!manual) {
+      let skip = null;
+      try { skip = JSON.parse(localStorage.getItem('kp:updLater') || 'null'); } catch (e) { /* ignore */ }
+      if (skip && skip.code === v.versionCode && Date.now() - skip.at < 864e5) return; // "Later" = ask again tomorrow
+      if (emu) return; // never interrupt a game
+    }
+    updateSheet(v);
+  }
+  function updateSheet(v) {
+    sheet('Update available', (body, close) => {
+      const p = document.createElement('p'); p.className = 'info';
+      p.textContent = 'JavaPlay ' + v.versionName + ' is ready. You have ' + VERSION + '. Your games and saves stay.';
+      body.appendChild(p);
+      if (v.notes && v.notes.length) {
+        const ul = document.createElement('ul'); ul.className = 'notes';
+        v.notes.forEach((n) => { const li = document.createElement('li'); li.textContent = n; ul.appendChild(li); });
+        body.appendChild(ul);
+      }
+      const prog = document.createElement('div'); prog.className = 'progress fixed'; prog.hidden = true; prog.innerHTML = '<span></span>';
+      const label = document.createElement('p'); label.className = 'info upd-label'; label.hidden = true;
+      body.append(prog, label);
+      const btn = opt('', 'Update now', () => {
+        btn.disabled = true; prog.hidden = false; label.hidden = false; label.textContent = 'Downloading…';
+        Bridge.downloadUpdate(v.apk);
+      }, 'primary');
+      body.appendChild(btn);
+      body.appendChild(opt('', 'Later', () => {
+        try { localStorage.setItem('kp:updLater', JSON.stringify({ code: v.versionCode, at: Date.now() })); } catch (e) { /* ignore */ }
+        close();
+      }));
+      updateUi = { bar: prog.firstChild, label, btn, prog };
+    }, () => { updateUi = null; });
+  }
+  const updateCallbacks = {
+    updateProgress(pct) {
+      if (!updateUi) return;
+      if (pct >= 0) { updateUi.bar.style.width = pct + '%'; updateUi.label.textContent = 'Downloading… ' + pct + '%'; }
+    },
+    updateNeedsPermission() {
+      if (updateUi) { updateUi.label.textContent = 'Allow “Install unknown apps” for JavaPlay, then come back.'; updateUi.btn.disabled = false; }
+    },
+    updateInstalling() {
+      if (updateUi) { updateUi.bar.style.width = '100%'; updateUi.label.textContent = 'Tap Update in the installer to finish.'; updateUi.btn.disabled = false; }
+    },
+    updateFailed(msg) {
+      if (updateUi) { updateUi.prog.hidden = true; updateUi.label.textContent = 'Update failed: ' + msg; updateUi.btn.disabled = false; }
+      else toast('Update failed: ' + msg, 4000);
+    },
+  };
   $('ctlBtn').addEventListener('click', () => controlsSheet());
 
   // ---------------- sound / fullscreen ----------------
@@ -991,6 +1058,7 @@
     },
     videoSaved(ok) { toast(ok ? 'Video saved to Movies/JavaPlay' : 'Could not save the video', 3500); },
   };
+  Object.assign(window.JavaPlayApp, updateCallbacks);
 
   (async function init() {
     if (typeof BigInt === 'undefined' || typeof BigInt64Array === 'undefined') {
@@ -1035,5 +1103,6 @@
     // first run: show the free games so there is something to play right away
     if (libCount === 0) setTab(true);
     else loadCatalog().catch(() => {});
+    setTimeout(() => checkUpdate(false), 1500);
   })();
 })();
