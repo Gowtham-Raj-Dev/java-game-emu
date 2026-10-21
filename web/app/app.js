@@ -6,7 +6,7 @@
   const Bridge = window.JavaPlayAndroid || null; // present inside the Android app
   const IN_APP = !!Bridge;
   document.documentElement.classList.toggle('in-app', IN_APP);
-  const VERSION = (Bridge && Bridge.versionName && Bridge.versionName()) || '2.5.2';
+  const VERSION = (Bridge && Bridge.versionName && Bridge.versionName()) || '2.5.3';
 
   // ---------------- IndexedDB game library ----------------
   const DB = {
@@ -804,6 +804,10 @@
     ['https://videotoimages.codelove.in', 'Video to Images', 'videotoimages.codelove.in'],
     ['https://utubeflow.codelove.in', 'Free YouTube Automation', 'utubeflow.codelove.in'],
   ];
+  // CodeLove "C + heart" mark (codelove-parent-domain/public/new-logo/c-heart-icon-transparent.svg)
+  const CODELOVE_ICON = '<svg viewBox="0 0 301 323" aria-hidden="true">' +
+    '<path fill="#fff" d="M 146 0 L 85 21 L 42 56 L 9 114 L 0 178 L 18 236 L 62 288 L 118 316 L 181 322 L 245 300 L 298 253 L 247 213 L 222 239 L 182 257 L 150 258 L 114 245 L 87 221 L 70 187 L 67 156 L 75 125 L 100 92 L 138 72 L 197 74 L 221 86 L 248 112 L 300 67 L 271 36 L 237 15 L 185 0 Z"/>' +
+    '<path fill="#2158FE" d="M 119 118 L 111 123 L 101 136 L 98 146 L 98 162 L 100 168 L 110 184 L 145 218 L 165 233 L 191 211 L 221 181 L 231 160 L 230 141 L 223 128 L 217 122 L 205 116 L 191 115 L 181 118 L 166 132 L 162 131 L 153 121 L 142 116 L 130 115 Z"/></svg>';
   function aboutSheet() {
     sheet('About JavaPlay', (body, close) => {
       const sites = NETWORK.map(([u, n, d]) => '<a href="' + u + '" target="_blank" rel="noopener">' + esc(n) + '<small>' + esc(d) + '</small></a>').join('');
@@ -812,8 +816,8 @@
         '<span>Version ' + VERSION + (IN_APP ? ' · Android app' : ' · Web player') + '<br>Free J2ME emulator for old Java phone games</span></div></div>' +
         '<div class="sec"><h3>Credits</h3>' +
         '<a class="credit" href="https://gowtham.codelove.in" target="_blank" rel="noopener"><span class="av">G</span><span><strong>Made by Gowtham</strong><small>Design, code and the JavaPlay engine · gowtham.codelove.in</small></span><span class="go">›</span></a>' +
-        '<a class="credit" href="https://codelove.in" target="_blank" rel="noopener"><span class="av cl">♥</span><span><strong>A CodeLove product</strong><small>Free tools and games · codelove.in</small></span><span class="go">›</span></a>' +
-        '<a class="credit" href="https://javaplay.codelove.in" target="_blank" rel="noopener"><span class="av">▶</span><span><strong>JavaPlay website</strong><small>Play in the browser, get the app · javaplay.codelove.in</small></span><span class="go">›</span></a>' +
+        '<a class="credit" href="https://codelove.in" target="_blank" rel="noopener"><span class="av cl">' + CODELOVE_ICON + '</span><span><strong>A CodeLove product</strong><small>Free tools and games · codelove.in</small></span><span class="go">›</span></a>' +
+        '<a class="credit" href="https://javaplay.codelove.in" target="_blank" rel="noopener"><span class="av logo"><img src="assets/javaplay-logo.png" alt="" width="40" height="40"></span><span><strong>JavaPlay website</strong><small>Play in the browser, get the app · javaplay.codelove.in</small></span><span class="go">›</span></a>' +
         '</div>' +
         '<div class="sec"><h3>More from CodeLove</h3><div class="sites">' + sites + '</div></div>' +
         '<a class="cl-banner" href="https://codelove.in" target="_blank" rel="noopener" aria-label="CodeLove – codelove.in"><img src="assets/codelove-footer.png" alt="CodeLove" width="704" height="144"></a>' +

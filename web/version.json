@@ -1,10 +1,11 @@
 {
-    "versionCode": 10,
-    "versionName": "2.5.2",
+    "versionCode": 11,
+    "versionName": "2.5.3",
     "kb": 234,
-    "apk": "https://javaplay.codelove.in/download/JavaPlay.apk?v=10",
+    "apk": "https://javaplay.codelove.in/download/JavaPlay.apk?v=11",
     "notes": [
-        "My games: every game box is now the same size, with the game screen as its picture",
+        "About: real CodeLove logo and JavaPlay logo in the credits",
+        "My games: every game box is the same size, with the game screen as its picture",
         "No more gap at the top after leaving a game",
         "Updates: the app only tells you; the download happens in your browser"
     ]
