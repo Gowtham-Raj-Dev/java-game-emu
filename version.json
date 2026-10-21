@@ -1,13 +1,11 @@
 {
-    "versionCode": 9,
-    "versionName": "2.5.1",
-    "kb": 233,
-    "apk": "https://javaplay.codelove.in/download/JavaPlay.apk?v=9",
+    "versionCode": 10,
+    "versionName": "2.5.2",
+    "kb": 234,
+    "apk": "https://javaplay.codelove.in/download/JavaPlay.apk?v=10",
     "notes": [
-        "Free games: the javaplay.codelove.in/games page right inside the app. Play or tap download and the game goes into My games",
-        "Auto rotate: turn your phone and the game screen and keys follow",
-        "Update now opens the website and downloads the new app",
-        "About and credits always open from the top",
-        "Fixed the CodeLove links box on older phones"
+        "My games: every game box is now the same size, with the game screen as its picture",
+        "No more gap at the top after leaving a game",
+        "Updates: the app only tells you; the download happens in your browser"
     ]
 }

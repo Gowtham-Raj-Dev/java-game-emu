@@ -5,7 +5,8 @@
   const $ = (id) => document.getElementById(id);
   const Bridge = window.JavaPlayAndroid || null; // present inside the Android app
   const IN_APP = !!Bridge;
-  const VERSION = (Bridge && Bridge.versionName && Bridge.versionName()) || '2.5.1';
+  document.documentElement.classList.toggle('in-app', IN_APP);
+  const VERSION = (Bridge && Bridge.versionName && Bridge.versionName()) || '2.5.2';
 
   // ---------------- IndexedDB game library ----------------
   const DB = {
@@ -134,9 +135,13 @@
       const card = document.createElement('div');
       card.className = 'card'; card.tabIndex = 0; card.setAttribute('role', 'button');
       card.setAttribute('aria-label', 'Play ' + g.name);
-      card.innerHTML = (g.shot ? '<span class="shot lib"><img alt="" src="' + g.shot + '">' + (g.icon ? '<img class="ico" alt="" src="' + g.icon + '">' : '') + '</span>' : g.icon ? '<img alt="" src="' + g.icon + '">' : '<span class="noicon"></span>') +
+      // every card gets the same phone-screen box: catalog screenshot, else a picture saved from play, else the big icon
+      const pic = g.shot || g.thumb;
+      card.innerHTML = '<span class="shot lib' + (pic ? '' : ' blank') + '">' +
+        (pic ? '<img class="' + (g.shot ? 'pic' : 'pic fit') + '" alt="" src="' + pic + '">' + (g.icon ? '<img class="ico" alt="" src="' + g.icon + '">' : '')
+          : g.icon ? '<img class="big" alt="" src="' + g.icon + '">' : '<span class="noicon"></span>') + '</span>' +
         '<span class="name"></span><span class="meta"></span><button class="more" type="button" aria-label="Game options">⋮</button>';
-      if (!g.icon && !g.shot) card.querySelector('.noicon').textContent = (g.name[0] || '?').toUpperCase();
+      if (!g.icon && !pic) card.querySelector('.noicon').textContent = (g.name[0] || '?').toUpperCase();
       card.querySelector('.name').textContent = g.name;
       card.querySelector('.meta').textContent = p.w + '×' + p.h + (p.rotate ? ' · turned' : '') + (p.touch ? ' · touch' : '');
       let pressTimer = null, longPressed = false;
@@ -377,7 +382,26 @@
     releaseAll();
   }
 
+  // keep the last game screen as the card picture for games without a catalog screenshot
+  function saveThumb() {
+    if (!emu || !current || current.shot || !display.width) return;
+    try {
+      const c = document.createElement('canvas');
+      c.width = 180; c.height = Math.round(180 * display.height / display.width);
+      const x = c.getContext('2d');
+      x.drawImage(display, 0, 0, c.width, c.height);
+      const px = x.getImageData(0, 0, c.width, c.height).data;
+      let lit = 0;
+      for (let i = 0; i < px.length; i += 16) if (Math.abs(px[i] - px[0]) + Math.abs(px[i + 1] - px[1]) + Math.abs(px[i + 2] - px[2]) > 40) lit++;
+      if (lit < px.length / 16 * 0.03) return; // blank or single-colour screen: keep the old picture
+      const url = c.toDataURL('image/webp', 0.8);
+      current.thumb = url.indexOf('image/webp') > 0 ? url : c.toDataURL('image/png');
+      DB.put(current);
+    } catch (e) { /* tainted or no canvas: no picture */ }
+  }
+
   function exitGame() {
+    saveThumb();
     stopGame();
     current = null;
     $('player').hidden = true;
@@ -827,7 +851,7 @@
     updateSheet(v);
   }
   function updateSheet(v) {
-    sheet('Update available', (body, close) => {
+    sheet('New update available', (body, close) => {
       const p = document.createElement('p'); p.className = 'info';
       p.textContent = 'JavaPlay ' + v.versionName + ' is ready. You have ' + VERSION + '. Your games and saves stay.';
       body.appendChild(p);
@@ -837,9 +861,9 @@
         body.appendChild(ul);
       }
       const how = document.createElement('p'); how.className = 'info';
-      how.textContent = 'Update now opens javaplay.codelove.in in your browser and downloads the new app. Open the download and tap Update.';
+      how.textContent = 'The app does not download anything itself: the button opens javaplay.codelove.in in your browser, which downloads the new JavaPlay. Open it and tap Update.';
       body.appendChild(how);
-      body.appendChild(opt('', 'Update now', () => {
+      body.appendChild(opt('', 'Download in browser', () => {
         close();
         Bridge.openExternal(SITE + '?update=' + v.versionCode + '#download');
       }, 'primary'));
