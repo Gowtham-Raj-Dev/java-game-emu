@@ -317,6 +317,10 @@ a { color: var(--accent); }
 .sheet .detail small a { color: var(--accent); }
 .progress { height: 4px; border-radius: 2px; background: var(--key); overflow: hidden; margin: 4px 0 10px; }
 .progress span { display: block; height: 100%; width: 30%; background: var(--accent); animation: load 1s ease-in-out infinite; }
+.progress.fixed span { width: 0; animation: none; transition: width .2s; }
+.sheet .notes { margin: 0 0 14px; padding-left: 20px; color: #c9cfdb; font-size: 0.9rem; }
+.sheet .notes li { margin-bottom: 4px; }
+.upd-label { text-align: center; }
 @keyframes load { from { transform: translateX(-100%); } to { transform: translateX(340%); } }
 
 .card .shot.lib { width: 100%; margin-bottom: 10px; }

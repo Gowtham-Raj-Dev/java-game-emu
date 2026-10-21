@@ -160,6 +160,120 @@ public class MainActivity extends Activity {
 	protected void onResume() {
 		super.onResume();
 		web.onResume();
+		// back from "Install unknown apps" settings: continue the update if it was allowed
+		if (installPending && canInstall()) {
+			installPending = false;
+			installUpdate();
+		}
+	}
+
+	// ---------------- in-app update ----------------
+	private static final String UPDATE_HOST = "https://javaplay.codelove.in/";
+	private boolean installPending;
+	private volatile boolean downloading;
+
+	private File updateFile() {
+		// the installer on Android 6 and older only reads file:// URIs from shared storage
+		if (Build.VERSION.SDK_INT < 24) return new File(getExternalFilesDir(null), UpdateProvider.NAME);
+		return UpdateProvider.apkFile(this);
+	}
+
+	private boolean canInstall() {
+		return Build.VERSION.SDK_INT < 26 || getPackageManager().canRequestPackageInstalls();
+	}
+
+	private void js(String code) {
+		runOnUiThread(() -> web.evaluateJavascript("window.JavaPlayApp&&" + code, null));
+	}
+
+	@SuppressWarnings("deprecation")
+	private int currentVersionCode() {
+		try {
+			return getPackageManager().getPackageInfo(getPackageName(), 0).versionCode;
+		} catch (Exception e) {
+			return 0;
+		}
+	}
+
+	private void downloadUpdate(String url) {
+		if (downloading) return;
+		if (url == null || !url.startsWith(UPDATE_HOST)) {
+			js("JavaPlayApp.updateFailed('Bad update link')");
+			return;
+		}
+		downloading = true;
+		new Thread(() -> {
+			File out = updateFile();
+			File tmp = new File(out.getPath() + ".part");
+			try {
+				File dir = out.getParentFile();
+				if (dir != null && !dir.exists() && !dir.mkdirs()) throw new IOException("mkdir failed");
+				java.net.HttpURLConnection c = (java.net.HttpURLConnection) new java.net.URL(url).openConnection();
+				c.setConnectTimeout(15000);
+				c.setReadTimeout(30000);
+				c.setUseCaches(false);
+				if (c.getResponseCode() != 200) throw new IOException("HTTP " + c.getResponseCode());
+				long total = c.getContentLength();
+				long done = 0;
+				int lastPct = -1;
+				try (InputStream in = c.getInputStream(); FileOutputStream fo = new FileOutputStream(tmp)) {
+					byte[] buf = new byte[32768];
+					int n;
+					while ((n = in.read(buf)) > 0) {
+						fo.write(buf, 0, n);
+						done += n;
+						int pct = total > 0 ? (int) (done * 100 / total) : -1;
+						if (pct != lastPct) {
+							lastPct = pct;
+							js("JavaPlayApp.updateProgress(" + pct + ")");
+						}
+					}
+				} finally {
+					c.disconnect();
+				}
+				if (out.exists() && !out.delete()) throw new IOException("delete failed");
+				if (!tmp.renameTo(out)) throw new IOException("rename failed");
+				// only hand over a real, newer JavaPlay build
+				@SuppressWarnings("deprecation")
+				android.content.pm.PackageInfo pi = getPackageManager().getPackageArchiveInfo(out.getPath(), 0);
+				@SuppressWarnings("deprecation")
+				boolean ok = pi != null && getPackageName().equals(pi.packageName) && pi.versionCode > currentVersionCode();
+				if (!ok) throw new IOException("not a newer JavaPlay");
+				runOnUiThread(() -> {
+					downloading = false;
+					if (canInstall()) {
+						installUpdate();
+					} else {
+						installPending = true;
+						js("JavaPlayApp.updateNeedsPermission()");
+						try {
+							startActivity(new Intent(android.provider.Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:" + getPackageName())));
+						} catch (ActivityNotFoundException e) {
+							installPending = false;
+							js("JavaPlayApp.updateFailed('Allow JavaPlay to install apps in Settings')");
+						}
+					}
+				});
+			} catch (Exception e) {
+				downloading = false;
+				//noinspection ResultOfMethodCallIgnored
+				tmp.delete();
+				js("JavaPlayApp.updateFailed(" + JSONObject.quote(e.getMessage() == null ? "Download failed" : e.getMessage()) + ")");
+			}
+		}).start();
+	}
+
+	private void installUpdate() {
+		Uri uri = Build.VERSION.SDK_INT < 24 ? Uri.fromFile(updateFile()) : UpdateProvider.apkUri();
+		Intent i = new Intent(Intent.ACTION_VIEW);
+		i.setDataAndType(uri, UpdateProvider.MIME);
+		i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_ACTIVITY_NEW_TASK);
+		try {
+			startActivity(i);
+			js("JavaPlayApp.updateInstalling()");
+		} catch (ActivityNotFoundException e) {
+			js("JavaPlayApp.updateFailed('No installer found')");
+		}
 	}
 
 	@Override
@@ -264,6 +378,25 @@ public class MainActivity extends Activity {
 
 	/** Called from JavaScript as window.JavaPlayAndroid. */
 	private class Bridge {
+		@JavascriptInterface
+		public int versionCode() {
+			return currentVersionCode();
+		}
+
+		@JavascriptInterface
+		public String versionName() {
+			try {
+				return getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
+			} catch (Exception e) {
+				return "";
+			}
+		}
+
+		@JavascriptInterface
+		public void downloadUpdate(String url) {
+			runOnUiThread(() -> MainActivity.this.downloadUpdate(url));
+		}
+
 		@JavascriptInterface
 		public void vibrate(int ms) {
 			Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);

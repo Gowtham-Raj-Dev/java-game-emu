@@ -21,8 +21,8 @@ android {
         applicationId 'in.codelove.keyplay'
         minSdk 21
         targetSdk 34
-        versionCode 5
-        versionName '2.3.0'
+        versionCode 6
+        versionName '2.4.0'
     }
 
     signingConfigs {
@@ -54,3 +54,27 @@ android {
     }
 }
 
+// Release: `gradlew publishApk` builds the signed APK, copies it to web/download/JavaPlay.apk and writes
+// web/version.json. Installed apps read version.json on start and offer the update. Bump versionCode first.
+def releaseNotes = [
+    'Update right inside the app: no need to visit the website again',
+    'Rotate button: play any game with the phone sideways',
+    'Landscape layout: D-pad left, game in the centre, keys right',
+    '8 keypad themes, button colours, button and D-pad size',
+    'Keyboard and game-controller key mapping',
+    'Free games now download inside the app',
+]
+def relCode = android.defaultConfig.versionCode
+def relName = android.defaultConfig.versionName
+def relApk = layout.buildDirectory.file('outputs/apk/release/app-release.apk')
+tasks.register('publishApk') {
+    dependsOn 'assembleRelease'
+    doLast {
+        def apk = relApk.get().asFile
+        new File(webDir, 'download/JavaPlay.apk').bytes = apk.bytes
+        def info = [versionCode: relCode, versionName: relName, kb: Math.round(apk.length() / 1024),
+                    apk: "https://javaplay.codelove.in/download/JavaPlay.apk?v=${relCode}".toString(), notes: releaseNotes]
+        new File(webDir, 'version.json').text = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(info)) + '\n'
+        println "Published JavaPlay ${relName} (${relCode}), ${info.kb} KB"
+    }
+}
