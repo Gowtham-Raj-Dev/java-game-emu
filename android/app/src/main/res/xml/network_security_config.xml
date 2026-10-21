@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- System roots plus Sectigo's 2021 public root (R46). Game sites such as PHONEKY use it, and phones
+     on Android 13 or older do not have it yet, so the mini browser showed a blank page there.
+     Plain http is allowed because many old .jar game sites never moved to https. -->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+            <certificates src="@raw/sectigo_public_server_root_r46" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>

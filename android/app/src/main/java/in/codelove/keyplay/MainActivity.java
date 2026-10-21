@@ -105,13 +105,23 @@ public class MainActivity extends Activity {
 	// "Open with JavaPlay" from a file manager or the browser's downloads
 	private void handleIntent(Intent intent) {
 		if (intent == null || !Intent.ACTION_VIEW.equals(intent.getAction()) || intent.getData() == null) return;
-		Uri uri = intent.getData();
+		importJar(intent.getData(), null, true);
+	}
+
+	// games downloaded in BrowserActivity, added when this screen comes back
+	private static final java.util.concurrent.ConcurrentLinkedQueue<Object[]> jarQueue = new java.util.concurrent.ConcurrentLinkedQueue<>();
+
+	static void queueJar(Uri uri, String name, boolean start) {
+		jarQueue.add(new Object[]{uri, name, start});
+	}
+
+	private void importJar(Uri uri, String knownName, boolean start) {
 		new Thread(() -> {
 			try {
 				byte[] bytes = readAll(uri);
-				String name = displayName(uri);
+				String name = knownName != null ? knownName : displayName(uri);
 				String js = "window.JavaPlayApp&&JavaPlayApp.openJarBase64(" + JSONObject.quote(name) + ",'"
-						+ Base64.encodeToString(bytes, Base64.NO_WRAP) + "')";
+						+ Base64.encodeToString(bytes, Base64.NO_WRAP) + "'," + start + ")";
 				runOnUiThread(() -> {
 					if (pageReady) web.evaluateJavascript(js, null);
 					else pendingJarJs = js;
@@ -160,6 +170,8 @@ public class MainActivity extends Activity {
 	protected void onResume() {
 		super.onResume();
 		web.onResume();
+		Object[] j;
+		while ((j = jarQueue.poll()) != null) importJar((Uri) j[0], (String) j[1], (Boolean) j[2]);
 	}
 
 	// ---------------- version / updates ----------------
@@ -302,6 +314,17 @@ public class MainActivity extends Activity {
 			}
 		}
 
+		/** Opens the in-app browser for finding more .jar games on the web. */
+		@JavascriptInterface
+		public void openBrowser(String url) {
+			runOnUiThread(() -> {
+				Intent i = new Intent(MainActivity.this, BrowserActivity.class);
+				if (url != null && url.startsWith("https://")) i.putExtra(BrowserActivity.EXTRA_URL, url);
+				startActivity(i);
+			});
+		}
+
+		/** Opens a link in the phone's browser (update downloads, website pages). */
 		@JavascriptInterface
 		public void openExternal(String url) {
 			runOnUiThread(() -> MainActivity.this.openExternal(url));

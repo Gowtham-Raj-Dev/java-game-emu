@@ -21,8 +21,8 @@ android {
         applicationId 'in.codelove.keyplay'
         minSdk 21
         targetSdk 34
-        versionCode 11
-        versionName '2.5.3'
+        versionCode 12
+        versionName '2.6.0'
     }
 
     signingConfigs {
@@ -57,10 +57,10 @@ android {
 // Release: `gradlew publishApk` builds the signed APK, copies it to web/download/JavaPlay.apk and writes
 // web/version.json. Installed apps read version.json on start and send people to the website to update. Bump versionCode first.
 def releaseNotes = [
+    'New PHONEKY tab: browse thousands more Java games in the built-in browser',
+    'Download a .jar there: it is saved in Downloads/JavaPlay and added to My games',
+    'Free games tab no longer shows the game count badge',
     'About: real CodeLove logo and JavaPlay logo in the credits',
-    'My games: every game box is the same size, with the game screen as its picture',
-    'No more gap at the top after leaving a game',
-    'Updates: the app only tells you; the download happens in your browser',
 ]
 def relCode = android.defaultConfig.versionCode
 def relName = android.defaultConfig.versionName

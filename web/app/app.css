@@ -305,6 +305,18 @@ a { color: var(--accent); }
 .urlbar > svg { width: 15px; height: 15px; fill: none; stroke: #7ee2a8; stroke-width: 2.2; stroke-linecap: round; margin-right: 8px; flex: none; }
 .urlbar .url { flex: 1; min-width: 0; font: 500 0.9rem var(--mono); color: var(--fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .urlbar .icon-btn { width: 36px; height: 36px; }
+/* PHONEKY tab (Android app) */
+.web-card { max-width: 460px; margin: 6vh auto 0; padding: 22px 20px; border-radius: 22px; background: var(--card); border: 1px solid #282d38; text-align: center; }
+.web-card h2 { margin: 0 0 8px; font-size: 1.3rem; }
+.web-card p { margin: 0 0 18px; color: var(--muted); }
+.web-card .fine { margin: 12px 0 0; font-size: 0.78rem; text-align: left; }
+.in-app-browse .web-only, .in-web .app-only { display: none; }
+.site { display: block; text-align: left; padding: 14px 40px 14px 16px; margin-bottom: 10px; border-radius: 16px; background: var(--bg); border: 1px solid #2c3140; color: var(--fg); text-decoration: none; position: relative; }
+.site::after { content: "›"; position: absolute; right: 16px; top: 50%; transform: translateY(-50%); font-size: 1.4rem; color: var(--muted); }
+.site:active, .site:hover { border-color: var(--accent); }
+.site b { display: block; font-size: 1.02rem; }
+.site span { display: block; color: var(--muted); font-size: 0.86rem; margin-top: 2px; }
+.site i { display: block; font: normal 500 0.72rem var(--mono); color: var(--accent); margin-top: 4px; }
 .urlbar .icon-btn svg { width: 18px; height: 18px; }
 #gamesFrame { flex: 1; width: 100%; min-height: 0; border: 0; background: #0f1116; display: block; }
 .store-search { display: flex; align-items: center; height: 46px; padding: 0 14px; border-radius: 14px; background: var(--card); border: 1px solid #282d38; }

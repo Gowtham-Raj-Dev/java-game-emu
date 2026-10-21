@@ -4,6 +4,8 @@
     <uses-permission android:name="android.permission.VIBRATE" />
     <!-- free games page + update check -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- mini browser: save .jar downloads in Downloads/JavaPlay (only needed up to Android 9) -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
 
     <application
         android:allowBackup="false"
@@ -13,6 +15,7 @@
         android:label="@string/app_name"
         android:theme="@style/JavaPlayTheme"
         android:hardwareAccelerated="true"
+        android:networkSecurityConfig="@xml/network_security_config"
         android:supportsRtl="false">
 
         <activity
@@ -46,5 +49,12 @@
                 <data android:pathPattern=".*\\.jar" />
                 <data android:pathPattern=".*\\..*\\.jar" />
             </intent-filter>
-        </activity>    </application>
+        </activity>
+
+        <activity
+            android:name=".BrowserActivity"
+            android:exported="false"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden|navigation|uiMode"
+            android:windowSoftInputMode="adjustResize" />
+    </application>
 </manifest>

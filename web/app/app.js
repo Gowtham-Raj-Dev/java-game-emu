@@ -6,7 +6,7 @@
   const Bridge = window.JavaPlayAndroid || null; // present inside the Android app
   const IN_APP = !!Bridge;
   document.documentElement.classList.toggle('in-app', IN_APP);
-  const VERSION = (Bridge && Bridge.versionName && Bridge.versionName()) || '2.5.3';
+  const VERSION = (Bridge && Bridge.versionName && Bridge.versionName()) || '2.6.0';
 
   // ---------------- IndexedDB game library ----------------
   const DB = {
@@ -961,16 +961,19 @@
     const r = await fetch(BASE + 'games/catalog.json', { cache: 'no-cache' });
     if (!r.ok) throw new Error('HTTP ' + r.status);
     catalog = await r.json();
-    $('freeCount').textContent = catalog.count;
     return catalog;
   }
 
-  function setTab(free) {
-    $('tabMine').setAttribute('aria-selected', String(!free));
+  // tab: false = My games, true = Free games, 'web' = PHONEKY (Android app only)
+  function setTab(tab) {
+    const free = tab === true, web = tab === 'web';
+    $('tabMine').setAttribute('aria-selected', String(!free && !web));
     $('tabFree').setAttribute('aria-selected', String(free));
-    $('homeBody').hidden = free;
+    $('tabWeb').setAttribute('aria-selected', String(web));
+    $('homeBody').hidden = free || web;
     $('storeBody').hidden = !free;
-    $('fab').hidden = free || libCount === 0;
+    $('webBody').hidden = !web;
+    $('fab').hidden = free || web || libCount === 0;
     if (free) { if (IN_APP) showGamesPage(); else renderStore(); }
   }
 
@@ -978,6 +981,7 @@
   // javaplay.codelove.in/games?app=1 runs in a frame; its Play / ⬇ buttons post messages here,
   // and the game is downloaded into My games (and started for Play).
   const SITE_ORIGIN = SITE.replace(/\/$/, '');
+  const MORE_GAMES_URL = 'https://phoneky.com/games/'; // start page of the in-app browser
   let gamesFrame = null;
   function showGamesPage() {
     const body = $('storeBody');
@@ -988,8 +992,7 @@
       '<button class="icon-btn" type="button" id="gamesReload" aria-label="Reload"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.3-5.6M20 4v5h-5"/></svg></button></div>' +
       '<iframe id="gamesFrame" title="Free Java games" src="' + SITE + 'games?app=1"></iframe>';
     gamesFrame = $('gamesFrame');
-    $('gamesReload').addEventListener('click', () => { gamesFrame.src = SITE + 'games?app=1&t=' + Date.now(); });
-  }
+    $('gamesReload').addEventListener('click', () => { gamesFrame.src = SITE + 'games?app=1&t=' + Date.now(); });  }
   function postToGames(msg) { if (gamesFrame && gamesFrame.contentWindow) gamesFrame.contentWindow.postMessage(msg, SITE_ORIGIN); }
   async function sendInstalled() {
     postToGames({ type: 'javaplay:installed', ids: (await DB.all()).map((g) => g.catalogId).filter(Boolean) });
@@ -999,6 +1002,8 @@
     const d = e.data;
     if (d.type === 'javaplay:hello') { sendInstalled(); return; }
     if (d.type === 'javaplay:open') { if (/^https:\/\//.test(d.url)) Bridge.openExternal(d.url); return; }
+    // "More Java games on the web" links: open in the mini browser, whose .jar downloads go to My games
+    if (d.type === 'javaplay:browse') { if (/^https:\/\//.test(d.url)) (Bridge.openBrowser ? Bridge.openBrowser(d.url) : Bridge.openExternal(d.url)); return; }
     if (d.type !== 'javaplay:play' && d.type !== 'javaplay:add') return;
     let g = null;
     try { g = (await loadCatalog()).games.find((x) => x.id === d.id); } catch (err) { /* offline */ }
@@ -1010,6 +1015,17 @@
   });
   $('tabMine').addEventListener('click', () => setTab(false));
   $('tabFree').addEventListener('click', () => setTab(true));
+  // PHONEKY tab: game sites. In the app they open in the native mini browser (.jar downloads land in
+  // Downloads/JavaPlay and My games); on the website they open in a new tab.
+  const CAN_BROWSE = !!(Bridge && Bridge.openBrowser);
+  $('webBody').classList.add(CAN_BROWSE ? 'in-app-browse' : 'in-web');
+  $('tabWeb').addEventListener('click', () => { setTab('web'); if (CAN_BROWSE) Bridge.openBrowser(MORE_GAMES_URL); });
+  $('webBody').addEventListener('click', (e) => {
+    const a = e.target.closest('a[data-browse]');
+    if (!a || !CAN_BROWSE) return;
+    e.preventDefault();
+    Bridge.openBrowser(a.href);
+  });
   $('emptyFree').addEventListener('click', () => setTab(true));
 
   async function renderStore() {
@@ -1112,18 +1128,23 @@
 
   // called by the Android app
   window.JavaPlayApp = {
-    async openJarBase64(name, b64) {
+    // start = false: a game saved from the mini browser with "Add & keep browsing"
+    async openJarBase64(name, b64, start) {
       const bin = atob(b64);
       const bytes = new Uint8Array(bin.length);
       for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
       const rec = await addJarBytes(name, bytes);
       await renderLibrary();
-      if (rec) startGame(rec);
+      if (!rec) return;
+      if (start !== false) { startGame(rec); return; }
+      if (emu) return;
+      setTab(false);
+      note('Added to My games: ' + rec.name);
     },
     back() {
       if (!$('modal').hidden && closeSheet) { closeSheet(); return true; }
       if (emu) { pauseMenu(); return true; }
-      if (!$('storeBody').hidden) { setTab(false); return true; } // Free games → My games before leaving the app
+      if (!$('storeBody').hidden || !$('webBody').hidden) { setTab(false); return true; } // other tabs → My games before leaving the app
       return false;
     },
     videoSaved(ok) { toast(ok ? 'Video saved to Movies/JavaPlay' : 'Could not save the video', 3500); },

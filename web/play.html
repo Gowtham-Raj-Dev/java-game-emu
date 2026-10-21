@@ -70,7 +70,8 @@
     </header>
     <nav class="tabs" role="tablist" aria-label="Library">
       <button class="tab" id="tabMine" type="button" role="tab" aria-selected="true">My games</button>
-      <button class="tab" id="tabFree" type="button" role="tab" aria-selected="false">Free games <span class="badge" id="freeCount"></span></button>
+      <button class="tab" id="tabFree" type="button" role="tab" aria-selected="false">Free games</button>
+      <button class="tab" id="tabWeb" type="button" role="tab" aria-selected="false">PHONEKY</button>
     </nav>
     <main class="home-body" id="homeBody">
       <div class="empty" id="empty" hidden>
@@ -93,6 +94,21 @@
       </div>
       <div class="grid store-grid" id="storeGrid"></div>
       <p class="store-msg" id="storeMsg" hidden></p>
+    </main>
+    <!-- PHONEKY and other .jar sites. App: built-in browser, downloads go to My games. Web: new tab, then + Add -->
+    <main class="home-body webtab" id="webBody" hidden>
+      <div class="web-card">
+        <h2>Find more Java games</h2>
+        <p class="how app-only">Open a site, download a <code>.jar</code>: it is saved in <b>Downloads/JavaPlay</b> on your phone and added to My games.</p>
+        <p class="how web-only">Open a site in a new tab and download a <code>.jar</code>. Then come back and tap <b>+</b> in My games (or drop the file here) to play it.</p>
+        <a class="site" data-browse href="https://phoneky.com/games/" target="_blank" rel="noopener nofollow">
+          <b>PHONEKY</b><span>Thousands of Java games, sorted by genre and rating</span><i>phoneky.com</i></a>
+        <a class="site" data-browse href="https://archive.org/search?query=j2me+games" target="_blank" rel="noopener nofollow">
+          <b>Internet Archive</b><span>Saved collections of old J2ME phone games</span><i>archive.org</i></a>
+        <a class="site" data-browse href="https://www.google.com/search?q=j2me+java+game+jar+download" target="_blank" rel="noopener nofollow">
+          <b>Search the web</b><span>Look up any game by name + “jar”</span><i>google.com</i></a>
+        <p class="fine">Tips: pick the <b>.jar</b> file, not the .jad. For old Nokia games choose 240×320 when a site asks for a screen size. These are separate websites; JavaPlay does not host their games.</p>
+      </div>
     </main>
     <label class="fab" for="jarInput" id="fab" aria-label="Add a game"><span>+</span></label>
     <input type="file" id="jarInput" accept=".jar,.jad,application/java-archive,application/x-java-archive,application/octet-stream" multiple>
