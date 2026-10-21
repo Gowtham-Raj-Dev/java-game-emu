@@ -206,6 +206,11 @@ public class MainActivity extends Activity {
 			File out = updateFile();
 			File tmp = new File(out.getPath() + ".part");
 			try {
+				// Android may restart the app after "Install unknown apps" is allowed: reuse the finished download
+				if (isNewerApk(out)) {
+					runOnUiThread(this::installOrAskPermission);
+					return;
+				}
 				File dir = out.getParentFile();
 				if (dir != null && !dir.exists() && !dir.mkdirs()) throw new IOException("mkdir failed");
 				java.net.HttpURLConnection c = (java.net.HttpURLConnection) new java.net.URL(url).openConnection();
@@ -223,7 +228,7 @@ public class MainActivity extends Activity {
 						fo.write(buf, 0, n);
 						done += n;
 						int pct = total > 0 ? (int) (done * 100 / total) : -1;
-						if (pct != lastPct) {
+						if (pct >= lastPct + 5 || pct == 100) {
 							lastPct = pct;
 							js("JavaPlayApp.updateProgress(" + pct + ")");
 						}
@@ -234,26 +239,12 @@ public class MainActivity extends Activity {
 				if (out.exists() && !out.delete()) throw new IOException("delete failed");
 				if (!tmp.renameTo(out)) throw new IOException("rename failed");
 				// only hand over a real, newer JavaPlay build
-				@SuppressWarnings("deprecation")
-				android.content.pm.PackageInfo pi = getPackageManager().getPackageArchiveInfo(out.getPath(), 0);
-				@SuppressWarnings("deprecation")
-				boolean ok = pi != null && getPackageName().equals(pi.packageName) && pi.versionCode > currentVersionCode();
-				if (!ok) throw new IOException("not a newer JavaPlay");
-				runOnUiThread(() -> {
-					downloading = false;
-					if (canInstall()) {
-						installUpdate();
-					} else {
-						installPending = true;
-						js("JavaPlayApp.updateNeedsPermission()");
-						try {
-							startActivity(new Intent(android.provider.Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:" + getPackageName())));
-						} catch (ActivityNotFoundException e) {
-							installPending = false;
-							js("JavaPlayApp.updateFailed('Allow JavaPlay to install apps in Settings')");
-						}
-					}
-				});
+				if (!isNewerApk(out)) {
+					//noinspection ResultOfMethodCallIgnored
+					out.delete();
+					throw new IOException("not a newer JavaPlay");
+				}
+				runOnUiThread(this::installOrAskPermission);
 			} catch (Exception e) {
 				downloading = false;
 				//noinspection ResultOfMethodCallIgnored
@@ -261,6 +252,29 @@ public class MainActivity extends Activity {
 				js("JavaPlayApp.updateFailed(" + JSONObject.quote(e.getMessage() == null ? "Download failed" : e.getMessage()) + ")");
 			}
 		}).start();
+	}
+
+	@SuppressWarnings("deprecation")
+	private boolean isNewerApk(File f) {
+		if (!f.isFile()) return false;
+		android.content.pm.PackageInfo pi = getPackageManager().getPackageArchiveInfo(f.getPath(), 0);
+		return pi != null && getPackageName().equals(pi.packageName) && pi.versionCode > currentVersionCode();
+	}
+
+	private void installOrAskPermission() {
+		downloading = false;
+		if (canInstall()) {
+			installUpdate();
+			return;
+		}
+		installPending = true;
+		js("JavaPlayApp.updateNeedsPermission()");
+		try {
+			startActivity(new Intent(android.provider.Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:" + getPackageName())));
+		} catch (ActivityNotFoundException e) {
+			installPending = false;
+			js("JavaPlayApp.updateFailed('Allow JavaPlay to install apps in Settings')");
+		}
 	}
 
 	private void installUpdate() {
