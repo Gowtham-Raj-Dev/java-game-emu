@@ -6,7 +6,7 @@
   const Bridge = window.JavaPlayAndroid || null; // present inside the Android app
   const IN_APP = !!Bridge;
   document.documentElement.classList.toggle('in-app', IN_APP);
-  const VERSION = (Bridge && Bridge.versionName && Bridge.versionName()) || '2.6.0';
+  const VERSION = (Bridge && Bridge.versionName && Bridge.versionName()) || '2.6.1';
 
   // ---------------- IndexedDB game library ----------------
   const DB = {
@@ -415,18 +415,22 @@
   function pauseEmu() { if (emu && !paused) { emu.pause(); paused = true; } }
   function resumeEmu() { if (emu && paused) { emu.resume(); paused = false; } }
 
-  // render size: crisp integer scale; at least ~720 px for good videos, capped for phone performance
-  let scale = 1;
+  // render size: while playing, the canvas stays at the game's own size and CSS scales it up
+  // (image-rendering: pixelated) on the GPU, so each frame is a tiny copy. Only while recording is it
+  // drawn at a crisp integer scale of at least ~720 px, so videos look sharp.
+  let scale = 1, recordingSize = false;
   function resizeDisplay() {
     if (!emu) return;
     const w = prof.w, h = prof.h;
     const dw = prof.rotate ? h : w, dh = prof.rotate ? w : h;
-    const wrap = $('screenWrap');
-    const dpr = window.devicePixelRatio || 1;
-    const fit = Math.floor(Math.min(wrap.clientWidth * dpr / dw, wrap.clientHeight * dpr / dh)) || 1;
-    const minForVideo = Math.ceil(720 / Math.max(dw, dh));
-    scale = Math.max(1, fit, minForVideo);
-    while (scale > 1 && dw * dh * scale * scale > 3200000) scale--;
+    scale = 1;
+    if (recordingSize) {
+      const wrap = $('screenWrap');
+      const dpr = window.devicePixelRatio || 1;
+      const fit = Math.floor(Math.min(wrap.clientWidth * dpr / dw, wrap.clientHeight * dpr / dh)) || 1;
+      scale = Math.max(1, fit, Math.ceil(720 / Math.max(dw, dh)));
+      while (scale > 1 && dw * dh * scale * scale > 3200000) scale--;
+    }
     if (display.width !== dw * scale || display.height !== dh * scale) { display.width = dw * scale; display.height = dh * scale; }
     dctx.imageSmoothingEnabled = false;
     dirty = true;
@@ -907,6 +911,7 @@
   function toggleRecord() {
     if (recorder) { stopRecording(); return; }
     if (!emu) return;
+    recordingSize = true; resizeDisplay(); // sharp video: draw the screen large while recording
     const stream = display.captureStream(30);
     const ac = KP.audio.ensure();
     if (ac && ac.createMediaStreamDestination) {
@@ -916,7 +921,7 @@
     }
     const types = ['video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm', 'video/mp4'];
     const mimeType = types.find((m) => MediaRecorder.isTypeSupported(m)) || '';
-    try { recorder = new MediaRecorder(stream, mimeType ? { mimeType, videoBitsPerSecond: 5e6 } : undefined); } catch (e) { toast('Recording is not supported here.'); return; }
+    try { recorder = new MediaRecorder(stream, mimeType ? { mimeType, videoBitsPerSecond: 5e6 } : undefined); } catch (e) { recordingSize = false; resizeDisplay(); toast('Recording is not supported here.'); return; }
     recChunks = [];
     recorder.ondataavailable = (e) => { if (e.data && e.data.size) recChunks.push(e.data); };
     recorder.onstop = () => {
@@ -927,6 +932,7 @@
       const ext = (recorder.mimeType || '').indexOf('mp4') >= 0 ? 'mp4' : 'webm';
       const name = (current ? current.name : 'javaplay').replace(/[^\w-]+/g, '_') + '-' + new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-') + '.' + ext;
       recorder = null;
+      recordingSize = false; resizeDisplay();
       saveBlob(blob, name);
     };
     recorder.start(1000);
@@ -964,7 +970,7 @@
     return catalog;
   }
 
-  // tab: false = My games, true = Free games, 'web' = PHONEKY (Android app only)
+  // tab: false = My games, true = Free games, 'web' = Other (game sites)
   function setTab(tab) {
     const free = tab === true, web = tab === 'web';
     $('tabMine').setAttribute('aria-selected', String(!free && !web));
@@ -981,7 +987,6 @@
   // javaplay.codelove.in/games?app=1 runs in a frame; its Play / ⬇ buttons post messages here,
   // and the game is downloaded into My games (and started for Play).
   const SITE_ORIGIN = SITE.replace(/\/$/, '');
-  const MORE_GAMES_URL = 'https://phoneky.com/games/'; // start page of the in-app browser
   let gamesFrame = null;
   function showGamesPage() {
     const body = $('storeBody');
@@ -1015,11 +1020,11 @@
   });
   $('tabMine').addEventListener('click', () => setTab(false));
   $('tabFree').addEventListener('click', () => setTab(true));
-  // PHONEKY tab: game sites. In the app they open in the native mini browser (.jar downloads land in
-  // Downloads/JavaPlay and My games); on the website they open in a new tab.
+  // "Other" tab: PHONEKY, Internet Archive, Google. In the app they open in the native mini browser
+  // (.jar downloads land in Downloads/JavaPlay and My games); on the website they open in a new tab.
   const CAN_BROWSE = !!(Bridge && Bridge.openBrowser);
   $('webBody').classList.add(CAN_BROWSE ? 'in-app-browse' : 'in-web');
-  $('tabWeb').addEventListener('click', () => { setTab('web'); if (CAN_BROWSE) Bridge.openBrowser(MORE_GAMES_URL); });
+  $('tabWeb').addEventListener('click', () => setTab('web'));
   $('webBody').addEventListener('click', (e) => {
     const a = e.target.closest('a[data-browse]');
     if (!a || !CAN_BROWSE) return;
