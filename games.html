@@ -90,6 +90,15 @@ a { color: var(--key); }
 .btn.primary { background: var(--key); color: var(--key-ink); border-color: transparent; }
 .btn.primary:hover { background: #ffa04a; }
 .btn svg { width: 17px; height: 17px; }
+/* second header row: where to get games (our catalog + other .jar sites, opened in a new tab) */
+.sitebar { border-top: 1px solid var(--line); }
+.sitebar .wrap { display: flex; align-items: center; gap: 6px; padding-block: 7px; overflow-x: auto; scrollbar-width: none; }
+.sitebar .wrap::-webkit-scrollbar { display: none; }
+.sitebar .lbl { flex: none; font: 600 0.7rem var(--mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-right: 4px; }
+.sitebar a { flex: none; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); color: var(--fg); text-decoration: none; font-weight: 600; font-size: 0.86rem; white-space: nowrap; }
+.sitebar a:hover { border-color: var(--key); background: var(--surface-2); }
+.sitebar a[aria-current="page"] { background: var(--key); color: var(--key-ink); border-color: transparent; }
+.in-app .sitebar { display: none; } /* the app has its own PHONEKY tab */
 
 .hero { padding-block: 40px 18px; }
 .hero .eyebrow { font: 600 0.75rem var(--mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--key); margin: 0 0 10px; }
@@ -97,7 +106,7 @@ a { color: var(--key); }
 .hero h1 .count { color: var(--key); }
 .hero p { color: var(--muted); max-width: 62ch; margin: 0; }
 
-.filters { position: sticky; top: calc(57px + env(safe-area-inset-top, 0px)); z-index: 9; background: linear-gradient(var(--bg) 85%, transparent); padding-block: 14px 18px; }
+.filters { position: sticky; top: var(--head-h, calc(101px + env(safe-area-inset-top, 0px))); z-index: 9; background: linear-gradient(var(--bg) 85%, transparent); padding-block: 14px 18px; }
 .search { display: flex; align-items: center; gap: 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 0 14px; height: 50px; max-width: 520px; }
 .search svg { width: 20px; height: 20px; color: var(--muted); flex: none; }
 .search input { flex: 1; min-width: 0; background: transparent; border: 0; color: var(--fg); font: 500 1rem var(--body); outline: none; }
@@ -168,6 +177,15 @@ a { color: var(--key); }
       <a class="btn primary" href="download/JavaPlay.apk" download>Get the app</a>
     </nav>
   </div>
+  <nav class="sitebar" aria-label="Where to get Java games">
+    <div class="wrap">
+      <span class="lbl">Get games</span>
+      <a href="games" aria-current="page">JavaPlay free games</a>
+      <a href="https://phoneky.com/games/" target="_blank" rel="noopener nofollow" data-web>PHONEKY ↗</a>
+      <a href="https://archive.org/search?query=j2me+games" target="_blank" rel="noopener nofollow" data-web>Internet Archive ↗</a>
+      <a href="https://www.google.com/search?q=j2me+java+game+jar+download" target="_blank" rel="noopener nofollow" data-web>Search the web ↗</a>
+    </div>
+  </nav>
 </header>
 
 <main class="wrap">
@@ -284,6 +302,10 @@ a { color: var(--key); }
   'use strict';
   const $ = (id) => document.getElementById(id);
   let all = [], cat = 'All', q = '';
+  // keep the search bar right under the (two-row) sticky header
+  const fitHead = () => document.documentElement.style.setProperty('--head-h', document.querySelector('.top').offsetHeight + 'px');
+  window.addEventListener('resize', fitHead);
+  window.addEventListener('load', fitHead); // after the web fonts
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
   // Inside the JavaPlay app this page runs in a frame: Play / ⬇ ask the app to add the game to My games
@@ -299,6 +321,7 @@ a { color: var(--key); }
   }
   if (APP) {
     document.documentElement.classList.add('in-app');
+    fitHead();
     window.addEventListener('message', (e) => {
       if (e.source !== window.parent || !e.data) return;
       const d = e.data;
@@ -322,6 +345,7 @@ a { color: var(--key); }
     }, true);
     send({ type: 'javaplay:hello' });
   }
+  fitHead();
   function playAttrs(g) { return APP ? ' href="#" data-act="play" data-id="' + esc(g.id) + '"' : ' href="play?game=' + encodeURIComponent(g.id) + '"'; }
   function dlAttrs(g) {
     if (!APP) return ' href="' + esc(g.jar) + '" download';

@@ -104,7 +104,7 @@
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
-html { scroll-behavior: smooth; scroll-padding-top: 76px; }
+html { scroll-behavior: smooth; scroll-padding-top: 122px; }
 body { margin: 0; background: var(--bg); color: var(--fg); font: 400 1.0625rem/1.6 var(--body); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
 img { max-width: 100%; height: auto; display: block; }
 a { color: var(--key); }
@@ -127,6 +127,14 @@ p { margin: 0; }
 .top nav a.link { color: var(--muted); text-decoration: none; font-weight: 500; font-size: 0.94rem; padding: 8px 12px; border-radius: 999px; transition: color .15s ease, background .15s ease; }
 .top nav a.link:hover { color: var(--fg); background: var(--surface-2); }
 .top nav .btn { margin-left: 8px; }
+/* second header row: where to get games (our catalog + other .jar sites, opened in a new tab) */
+.sitebar { border-top: 1px solid var(--line-soft); }
+.sitebar .wrap { display: flex; align-items: center; gap: 6px; padding-block: 7px; overflow-x: auto; scrollbar-width: none; }
+.sitebar .wrap::-webkit-scrollbar { display: none; }
+.sitebar .lbl { flex: none; font: 600 0.7rem var(--mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-right: 4px; }
+.sitebar a { flex: none; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); color: var(--fg); text-decoration: none; font-weight: 600; font-size: 0.86rem; white-space: nowrap; transition: border-color .15s ease, background .15s ease; }
+.sitebar a:hover { border-color: var(--key); background: var(--surface-2); }
+.sitebar a[aria-current="page"] { background: var(--key); color: var(--key-ink); border-color: transparent; }
 
 /* Buttons */
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; padding: 14px 24px; border-radius: 999px; font: 700 1rem var(--body); text-decoration: none; border: 1px solid var(--line); color: var(--fg); background: var(--surface-2); transition: transform .15s ease, background .15s ease, box-shadow .15s ease; }
@@ -287,6 +295,15 @@ section + section { border-top: 1px solid var(--line-soft); }
       <a class="btn primary small" href="play">Play in browser</a>
     </nav>
   </div>
+  <nav class="sitebar" aria-label="Where to get Java games">
+    <div class="wrap">
+      <span class="lbl">Get games</span>
+      <a href="games">JavaPlay free games</a>
+      <a href="https://phoneky.com/games/" target="_blank" rel="noopener nofollow">PHONEKY ↗</a>
+      <a href="https://archive.org/search?query=j2me+games" target="_blank" rel="noopener nofollow">Internet Archive ↗</a>
+      <a href="https://www.google.com/search?q=j2me+java+game+jar+download" target="_blank" rel="noopener nofollow">Search the web ↗</a>
+    </div>
+  </nav>
 </header>
 
 <main>
