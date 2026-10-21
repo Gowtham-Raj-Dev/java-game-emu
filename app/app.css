@@ -292,6 +292,15 @@ a { color: var(--accent); }
 .tab[aria-selected="true"] .badge { background: var(--accent); color: var(--accent-ink); }
 .btn.ghost { background: transparent; border-color: transparent; color: var(--accent); }
 .store-head { max-width: 980px; margin: 0 auto 12px; }
+/* Android app: Free games tab shows javaplay.codelove.in/games with a small address bar */
+.home-body.web { padding: 0; overflow: hidden; display: flex; flex-direction: column; }
+.home-body.web[hidden] { display: none; }
+.urlbar { flex: none; display: flex; align-items: center; margin: 8px max(10px, env(safe-area-inset-right, 0px)) 8px max(10px, env(safe-area-inset-left, 0px)); padding: 0 4px 0 12px; height: 42px; border-radius: 999px; background: var(--card); border: 1px solid #282d38; }
+.urlbar > svg { width: 15px; height: 15px; fill: none; stroke: #7ee2a8; stroke-width: 2.2; stroke-linecap: round; margin-right: 8px; flex: none; }
+.urlbar .url { flex: 1; min-width: 0; font: 500 0.9rem var(--mono); color: var(--fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.urlbar .icon-btn { width: 36px; height: 36px; }
+.urlbar .icon-btn svg { width: 18px; height: 18px; }
+#gamesFrame { flex: 1; width: 100%; min-height: 0; border: 0; background: #0f1116; display: block; }
 .store-search { display: flex; align-items: center; height: 46px; padding: 0 14px; border-radius: 14px; background: var(--card); border: 1px solid #282d38; }
 .store-search svg { width: 20px; height: 20px; fill: none; stroke: var(--muted); stroke-width: 2.2; stroke-linecap: round; margin-right: 10px; flex: none; }
 .store-search input { flex: 1; min-width: 0; height: 100%; border: 0; background: transparent; color: var(--fg); font: 500 1rem var(--ui); outline: none; -webkit-user-select: text; user-select: text; }

@@ -5,7 +5,7 @@
   const $ = (id) => document.getElementById(id);
   const Bridge = window.JavaPlayAndroid || null; // present inside the Android app
   const IN_APP = !!Bridge;
-  const VERSION = (Bridge && Bridge.versionName && Bridge.versionName()) || '2.4.1';
+  const VERSION = (Bridge && Bridge.versionName && Bridge.versionName()) || '2.5.0';
 
   // ---------------- IndexedDB game library ----------------
   const DB = {
@@ -200,6 +200,10 @@
     closeSheet = close;
     build(body, close);
     modal.hidden = false;
+    // the sheet element is reused: always open at the top, not where the last sheet was scrolled to
+    const sh = modal.querySelector('.sheet');
+    sh.scrollTop = 0;
+    requestAnimationFrame(() => { sh.scrollTop = 0; });
     const first = body.querySelector('textarea');
     if (first) first.focus();
   }
@@ -264,28 +268,44 @@
   // phone rotation: the app locks the orientation natively; a phone browser can only lock it in full screen
   const CAN_ROTATE = IN_APP || !!(window.screen && screen.orientation && screen.orientation.lock && window.matchMedia && matchMedia('(pointer: coarse)').matches);
   const ORIENT_LABEL = { auto: 'Auto', portrait: 'Portrait', landscape: 'Landscape' };
+  // Auto: tall games turn with the phone (the layout follows), wide games stay sideways on either side
   function wantedOrientation() {
     const o = current && current.orient;
     if (o === 'portrait' || o === 'landscape') return o;
-    return prof && prof.landscape ? 'landscape' : 'portrait';
+    return prof && prof.landscape ? 'landscape' : 'sensor';
   }
   function lockOrientation(fromUser) {
     const mode = wantedOrientation();
     if (Bridge && Bridge.setOrientation) { Bridge.setOrientation(mode); return; }
-    if (!fromUser || !CAN_ROTATE) return;
+    if (!CAN_ROTATE) return;
+    if (mode === 'sensor') { try { screen.orientation.unlock(); } catch (e) { /* not locked */ } return; }
+    if (!fromUser && !document.fullscreenElement) return; // a browser locks only in full screen, which needs a tap
     (async () => {
       try {
         if (!document.fullscreenElement) await $('app').requestFullscreen();
         await screen.orientation.lock(mode);
-      } catch (e) { toast('Turn your phone to ' + mode + '.'); }
+      } catch (e) { if (fromUser) toast('Turn your phone to ' + mode + '.'); }
     })();
   }
   function setOrientation(mode, fromUser) {
     current.orient = mode;
     DB.put(current);
     lockOrientation(fromUser);
-    toast('Phone: ' + ORIENT_LABEL[mode]);
+    toast(mode === 'auto' ? 'Phone: Auto, turns with your phone' : 'Phone: ' + ORIENT_LABEL[mode] + ' (Menu → Phone orientation for Auto)', 3000);
   }
+
+  // phone browsers: play sideways games and landscape phones in full screen (needs a tap, so retried on touch)
+  const MOBILE_WEB = !IN_APP && !!document.documentElement.requestFullscreen && !!window.matchMedia && matchMedia('(pointer: coarse)').matches;
+  function autoFullscreen() {
+    if (!MOBILE_WEB || !emu || $('player').hidden || document.fullscreenElement) return;
+    const sideways = window.innerWidth > window.innerHeight;
+    if (!sideways && !(prof && prof.landscape)) return;
+    $('app').requestFullscreen().then(() => {
+      if (wantedOrientation() === 'landscape' && screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(() => {});
+    }).catch(() => { /* no recent tap: tried again on the next touch */ });
+  }
+  $('player').addEventListener('pointerdown', autoFullscreen, true);
+  window.addEventListener('orientationchange', () => setTimeout(autoFullscreen, 300));
   function rotatePhone() {
     if (!current) return;
     const now = window.innerWidth > window.innerHeight ? 'landscape' : 'portrait';
@@ -342,6 +362,7 @@
     $('softL').textContent = ''; $('softR').textContent = '';
     applyLayout();
     emu.start();
+    autoFullscreen();
     paused = false; menuOpen = false;
     display.focus({ preventScroll: true });
     if (!localStorage.getItem('kp:menuHint')) {
@@ -363,6 +384,7 @@
     $('home').hidden = false;
     if (Bridge && Bridge.setOrientation) Bridge.setOrientation('auto');
     if (Bridge && Bridge.setFullscreen) Bridge.setFullscreen(false);
+    if (MOBILE_WEB && document.fullscreenElement) document.exitFullscreen().catch(() => {});
     renderLibrary();
   }
 
@@ -781,10 +803,10 @@
   }
   $('aboutBtn').addEventListener('click', () => aboutSheet());
 
-  // ---------------- in-app updates (Android) ----------------
-  // web/version.json is written by the Gradle task publishApk together with web/download/JavaPlay.apk
-  const CAN_UPDATE = !!(Bridge && Bridge.versionCode && Bridge.downloadUpdate);
-  let updateUi = null; // { bar, label, btn } while the update sheet is open
+  // ---------------- updates (Android) ----------------
+  // web/version.json is written by the Gradle task publishApk together with web/download/JavaPlay.apk.
+  // "Update now" opens the website in the phone's browser, which downloads the new APK.
+  const CAN_UPDATE = !!(Bridge && Bridge.versionCode && Bridge.openExternal);
   async function fetchLatest() {
     const r = await fetch(SITE + 'version.json?t=' + Date.now(), { cache: 'no-store' });
     if (!r.ok) throw new Error('HTTP ' + r.status);
@@ -814,37 +836,19 @@
         v.notes.forEach((n) => { const li = document.createElement('li'); li.textContent = n; ul.appendChild(li); });
         body.appendChild(ul);
       }
-      const prog = document.createElement('div'); prog.className = 'progress fixed'; prog.hidden = true; prog.innerHTML = '<span></span>';
-      const label = document.createElement('p'); label.className = 'info upd-label'; label.hidden = true;
-      body.append(prog, label);
-      const btn = opt('', 'Update now', () => {
-        btn.disabled = true; prog.hidden = false; label.hidden = false; label.textContent = 'Downloading…';
-        Bridge.downloadUpdate(v.apk);
-      }, 'primary');
-      body.appendChild(btn);
+      const how = document.createElement('p'); how.className = 'info';
+      how.textContent = 'Update now opens javaplay.codelove.in in your browser and downloads the new app. Open the download and tap Update.';
+      body.appendChild(how);
+      body.appendChild(opt('', 'Update now', () => {
+        close();
+        Bridge.openExternal(SITE + '?update=' + v.versionCode + '#download');
+      }, 'primary'));
       body.appendChild(opt('', 'Later', () => {
         try { localStorage.setItem('kp:updLater', JSON.stringify({ code: v.versionCode, at: Date.now() })); } catch (e) { /* ignore */ }
         close();
       }));
-      updateUi = { bar: prog.firstChild, label, btn, prog };
-    }, () => { updateUi = null; });
+    });
   }
-  const updateCallbacks = {
-    updateProgress(pct) {
-      if (!updateUi) return;
-      if (pct >= 0) { updateUi.bar.style.width = pct + '%'; updateUi.label.textContent = 'Downloading… ' + pct + '%'; }
-    },
-    updateNeedsPermission() {
-      if (updateUi) { updateUi.label.textContent = 'Allow “Install unknown apps” for JavaPlay, then come back.'; updateUi.btn.disabled = false; }
-    },
-    updateInstalling() {
-      if (updateUi) { updateUi.bar.style.width = '100%'; updateUi.label.textContent = 'Tap Update in the installer to finish.'; updateUi.btn.disabled = false; }
-    },
-    updateFailed(msg) {
-      if (updateUi) { updateUi.prog.hidden = true; updateUi.label.textContent = 'Update failed: ' + msg; updateUi.btn.disabled = false; }
-      else toast('Update failed: ' + msg, 4000);
-    },
-  };
   $('ctlBtn').addEventListener('click', () => controlsSheet());
 
   // ---------------- sound / fullscreen ----------------
@@ -939,8 +943,43 @@
     $('homeBody').hidden = free;
     $('storeBody').hidden = !free;
     $('fab').hidden = free || libCount === 0;
-    if (free) renderStore();
+    if (free) { if (IN_APP) showGamesPage(); else renderStore(); }
   }
+
+  // ---------------- Android app: Free games = the website's games page ----------------
+  // javaplay.codelove.in/games?app=1 runs in a frame; its Play / ⬇ buttons post messages here,
+  // and the game is downloaded into My games (and started for Play).
+  const SITE_ORIGIN = SITE.replace(/\/$/, '');
+  let gamesFrame = null;
+  function showGamesPage() {
+    const body = $('storeBody');
+    if (gamesFrame) return;
+    body.classList.add('web');
+    body.innerHTML = '<div class="urlbar"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>' +
+      '<span class="url">javaplay.codelove.in/games</span>' +
+      '<button class="icon-btn" type="button" id="gamesReload" aria-label="Reload"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.3-5.6M20 4v5h-5"/></svg></button></div>' +
+      '<iframe id="gamesFrame" title="Free Java games" src="' + SITE + 'games?app=1"></iframe>';
+    gamesFrame = $('gamesFrame');
+    $('gamesReload').addEventListener('click', () => { gamesFrame.src = SITE + 'games?app=1&t=' + Date.now(); });
+  }
+  function postToGames(msg) { if (gamesFrame && gamesFrame.contentWindow) gamesFrame.contentWindow.postMessage(msg, SITE_ORIGIN); }
+  async function sendInstalled() {
+    postToGames({ type: 'javaplay:installed', ids: (await DB.all()).map((g) => g.catalogId).filter(Boolean) });
+  }
+  window.addEventListener('message', async (e) => {
+    if (!gamesFrame || e.origin !== SITE_ORIGIN || e.source !== gamesFrame.contentWindow || !e.data || typeof e.data !== 'object') return;
+    const d = e.data;
+    if (d.type === 'javaplay:hello') { sendInstalled(); return; }
+    if (d.type === 'javaplay:open') { if (/^https:\/\//.test(d.url)) Bridge.openExternal(d.url); return; }
+    if (d.type !== 'javaplay:play' && d.type !== 'javaplay:add') return;
+    let g = null;
+    try { g = (await loadCatalog()).games.find((x) => x.id === d.id); } catch (err) { /* offline */ }
+    if (!g) { postToGames({ type: 'javaplay:added', ok: false }); return; }
+    const start = d.type === 'javaplay:play';
+    const ok = await getCatalogGame(g, start);
+    postToGames({ type: 'javaplay:added', ok, started: start, name: g.name });
+    sendInstalled();
+  });
   $('tabMine').addEventListener('click', () => setTab(false));
   $('tabFree').addEventListener('click', () => setTab(true));
   $('emptyFree').addEventListener('click', () => setTab(true));
@@ -1000,9 +1039,11 @@
     });
   }
 
-  async function playCatalogGame(g) {
+  function playCatalogGame(g) { return getCatalogGame(g, true); }
+  // download a catalog game into My games (once); start it when asked
+  async function getCatalogGame(g, start) {
     const have = (await DB.all()).find((r) => r.catalogId === g.id);
-    if (have) { startGame(have); return true; }
+    if (have) { if (start) startGame(have); return true; }
     try {
       const r = await fetch(BASE + g.jar);
       if (!r.ok) throw new Error('HTTP ' + r.status);
@@ -1019,7 +1060,7 @@
       if (Object.keys(o).length) rec.override = o;
       await DB.put(rec);
       renderLibrary();
-      startGame(rec);
+      if (start) startGame(rec);
       return true;
     } catch (e) {
       toast('Download failed. Check your internet connection.', 3500);
@@ -1054,11 +1095,11 @@
     back() {
       if (!$('modal').hidden && closeSheet) { closeSheet(); return true; }
       if (emu) { pauseMenu(); return true; }
+      if (!$('storeBody').hidden) { setTab(false); return true; } // Free games → My games before leaving the app
       return false;
     },
     videoSaved(ok) { toast(ok ? 'Video saved to Movies/JavaPlay' : 'Could not save the video', 3500); },
   };
-  Object.assign(window.JavaPlayApp, updateCallbacks);
 
   (async function init() {
     if (typeof BigInt === 'undefined' || typeof BigInt64Array === 'undefined') {
