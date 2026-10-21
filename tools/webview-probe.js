@@ -1,4 +1,4 @@
-// Attach to the KeyPlay WebView on a device (adb forward tcp:9333 localabstract:webview_devtools_remote_<pid>)
+// Attach to the JavaPlay WebView on a device (adb forward tcp:9333 localabstract:webview_devtools_remote_<pid>)
 // and print engine state + recent console output. usage: node webview-probe.js [js-to-eval]
 const puppeteer = require('puppeteer-core');
 (async () => {

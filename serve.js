@@ -29,7 +29,7 @@ http.createServer((req, res) => {
     fs.createReadStream(file).pipe(res);
   });
 }).listen(port, '0.0.0.0', () => {
-  console.log(`KeyPlay site: http://localhost:${port}`);
+  console.log(`JavaPlay site: http://localhost:${port}`);
   for (const list of Object.values(os.networkInterfaces())) {
     for (const a of list) if (a.family === 'IPv4' && !a.internal) console.log(`On your phone (same WiFi): http://${a.address}:${port}`);
   }

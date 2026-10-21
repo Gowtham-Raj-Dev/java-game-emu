@@ -1,4 +1,4 @@
-// Headless smoke test: run a J2ME JAR on the KeyPlay engine in Node (no-op canvas) and press some keys.
+// Headless smoke test: run a J2ME JAR on the JavaPlay engine in Node (no-op canvas) and press some keys.
 // usage: node run-jar.js <file.jar> [seconds] [keys...]   keys like  2000:-5 (at ms : code)
 const fs = require('fs');
 const KP = require('./load-engine.js')(['inflate.js', 'zip.js', 'png.js', 'classfile.js', 'vm.js', 'jlib.js', 'midp-lcdui.js', 'midp-ui.js', 'midp-game.js', 'audio.js', 'midp-misc.js', 'launcher.js']);

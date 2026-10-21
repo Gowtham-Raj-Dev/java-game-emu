@@ -57,9 +57,15 @@
     <header class="appbar">
       <img src="assets/javaplay-logo.png" alt="" width="32" height="32">
       <h1>JavaPlay</h1>
+      <button class="icon-btn" id="ctlBtn" type="button" aria-label="Controls and keypad themes">
+        <svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.6-.8 1.6-1.6 0-.5-.2-.8-.4-1.1-.3-.3-.4-.6-.4-1 0-.9.7-1.6 1.6-1.6H16a5 5 0 0 0 5-5C21 6.5 17 3 12 3z"/><circle cx="7.5" cy="11" r="1.2"/><circle cx="10.5" cy="7" r="1.2"/><circle cx="15" cy="7.5" r="1.2"/></svg>
+      </button>
       <button class="icon-btn" id="muteBtn" type="button" aria-label="Sound on or off">
         <svg viewBox="0 0 24 24" class="on"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg>
         <svg viewBox="0 0 24 24" class="off"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M17 9l5 6M22 9l-5 6"/></svg>
+      </button>
+      <button class="icon-btn" id="aboutBtn" type="button" aria-label="About and credits">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.01"/></svg>
       </button>
     </header>
     <nav class="tabs" role="tablist" aria-label="Library">
@@ -104,7 +110,10 @@
       <div class="keypad" id="keypad">
         <div class="kp-left">
           <button tabindex="-1" class="k soft" data-key="-6" type="button"><span class="bar-ind"></span><span class="soft-label" id="softL"></span></button>
-          <button tabindex="-1" class="k menu" data-action="menu" type="button" aria-label="Game menu"><span class="burger"></span></button>
+          <div class="k-pair">
+            <button tabindex="-1" class="k tool" data-action="menu" type="button" aria-label="Game menu"><span class="burger"></span></button>
+            <button tabindex="-1" class="k tool rot" data-action="rotate" type="button" aria-label="Rotate phone"><svg viewBox="0 0 24 24"><rect x="9" y="7" width="6" height="10" rx="1.2"/><path d="M20.5 12A8.5 8.5 0 0 1 12 20.5M3.5 12A8.5 8.5 0 0 1 12 3.5"/><path d="M10 1.5 12 3.5 10 5.5M14 18.5l-2 2 2 2"/></svg></button>
+          </div>
         </div>
         <div class="dpad" id="dpad" aria-label="Direction pad">
           <span class="arr up"></span><span class="arr right"></span><span class="arr down"></span><span class="arr left"></span>
@@ -128,9 +137,14 @@
           <button tabindex="-1" class="k num" data-key="48" type="button">0<small>+</small></button>
           <button tabindex="-1" class="k num" data-key="35" type="button">#<small>&nbsp;</small></button>
         </div>
+        <!-- shown instead of the number keys when they are hidden (Controls) -->
+        <div class="actions">
+          <button tabindex="-1" class="k act" data-key="53" type="button">5</button>
+          <button tabindex="-1" class="k act fire" data-key="-5" type="button">OK</button>
+        </div>
       </div>
     </div>
-    <p class="kbd-hint">Keyboard: arrows · Enter = OK · F1 / F2 = soft keys · 0–9 * # · Esc = menu</p>
+    <p class="kbd-hint">Keyboard: arrows · Enter = OK · F1 / F2 = soft keys · 0–9 * # · Esc = menu · change keys in Menu → Controls</p>
   </section>
 
   <div class="modal" id="modal" hidden>

@@ -1,4 +1,4 @@
-/* KeyPlay engine – synchronous DEFLATE decoder (RFC 1951), used for JAR entries and PNG data. */
+/* JavaPlay engine – synchronous DEFLATE decoder (RFC 1951), used for JAR entries and PNG data. */
 (function (KP) {
   'use strict';
 

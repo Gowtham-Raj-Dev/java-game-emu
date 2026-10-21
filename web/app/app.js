@@ -1,10 +1,11 @@
-/* JavaPlay player UI – game library, engine host, keypad / keyboard / touch input, rotation, recording. */
+/* JavaPlay player UI – game library, engine host, keypad / keyboard / touch input, rotation, themes, recording. */
 (function () {
   'use strict';
   const KP = window.KP;
   const $ = (id) => document.getElementById(id);
-  const Bridge = window.KeyPlayAndroid || null; // present inside the Android app
+  const Bridge = window.JavaPlayAndroid || null; // present inside the Android app
   const IN_APP = !!Bridge;
+  const VERSION = '2.3.0';
 
   // ---------------- IndexedDB game library ----------------
   const DB = {
@@ -219,6 +220,78 @@
     };
   }
 
+  // ---------------- controls: keypad themes, sizes, sides ----------------
+  // every theme sets all of THEME_VARS; app.css holds the Midnight values as defaults
+  const THEMES = {
+    midnight: { name: 'Midnight', '--stage': '#07080b', '--pad-bg': 'linear-gradient(#1b1e26, #111318)', '--pad-edge': '#262b36', '--k-bg': '#262a34', '--k-edge': '#363c4b', '--k-fg': '#eef0f4', '--k-sub': '#8d95a7', '--dpad': '#262a34', '--arrow': '#b9bfcc', '--hl': '#ff8a1f', '--hl-ink': '#1a1206', '--ok': '#ff8a1f', '--ok-ink': '#1a1206', '--kr': '14px', '--glow': 'none' },
+    classic: { name: 'Classic', '--stage': '#9ea4ad', '--pad-bg': 'linear-gradient(#dfe2e7, #b4bac3)', '--pad-edge': '#8d949e', '--k-bg': '#f5f6f8', '--k-edge': '#9aa1ab', '--k-fg': '#1f232a', '--k-sub': '#5b6370', '--dpad': '#eceef1', '--arrow': '#4a515c', '--hl': '#1d6fe0', '--hl-ink': '#ffffff', '--ok': '#1d6fe0', '--ok-ink': '#ffffff', '--kr': '10px', '--glow': '0 2px 0 #8a919b' },
+    neon: { name: 'Neon', '--stage': '#020206', '--pad-bg': '#05050c', '--pad-edge': '#11324a', '--k-bg': '#090914', '--k-edge': '#00e5ff', '--k-fg': '#c8faff', '--k-sub': '#00a9c0', '--dpad': '#090914', '--arrow': '#00e5ff', '--hl': '#ff2bd6', '--hl-ink': '#ffffff', '--ok': '#ff2bd6', '--ok-ink': '#ffffff', '--kr': '12px', '--glow': '0 0 8px rgba(0, 229, 255, 0.45)' },
+    retro: { name: 'Retro', '--stage': '#a9a796', '--pad-bg': 'linear-gradient(#cfcdbd, #b8b6a3)', '--pad-edge': '#98968a', '--k-bg': '#3d3c46', '--k-edge': '#2a2a31', '--k-fg': '#ecebdf', '--k-sub': '#b5b3a6', '--dpad': '#2b2b33', '--arrow': '#8f8e99', '--hl': '#8bac0f', '--hl-ink': '#0f380f', '--ok': '#a32559', '--ok-ink': '#ffffff', '--kr': '999px', '--glow': '0 2px 0 #77756a' },
+    ocean: { name: 'Ocean', '--stage': '#04121d', '--pad-bg': 'linear-gradient(#0d2a42, #071827)', '--pad-edge': '#173f5e', '--k-bg': '#12324d', '--k-edge': '#1e4d72', '--k-fg': '#e3f4ff', '--k-sub': '#7fb0d3', '--dpad': '#103049', '--arrow': '#9cc8e6', '--hl': '#2ad4c4', '--hl-ink': '#03201d', '--ok': '#2ad4c4', '--ok-ink': '#03201d', '--kr': '16px', '--glow': 'none' },
+    sakura: { name: 'Sakura', '--stage': '#2a1520', '--pad-bg': 'linear-gradient(#ffe6ee, #f6c8d7)', '--pad-edge': '#e9a6bd', '--k-bg': '#fff6f9', '--k-edge': '#efb0c5', '--k-fg': '#6b2140', '--k-sub': '#b0607e', '--dpad': '#fff0f5', '--arrow': '#b0607e', '--hl': '#e84a7f', '--hl-ink': '#ffffff', '--ok': '#e84a7f', '--ok-ink': '#ffffff', '--kr': '18px', '--glow': '0 2px 0 #e3a3b9' },
+    gold: { name: 'Gold', '--stage': '#050505', '--pad-bg': 'linear-gradient(#151515, #0a0a0a)', '--pad-edge': '#3b3016', '--k-bg': '#1b1b1b', '--k-edge': '#5c4a1e', '--k-fg': '#f3d27a', '--k-sub': '#a88a3d', '--dpad': '#171717', '--arrow': '#c9a24a', '--hl': '#e8b84a', '--hl-ink': '#1a1206', '--ok': '#e8b84a', '--ok-ink': '#1a1206', '--kr': '12px', '--glow': 'none' },
+    glass: { name: 'Glass', '--stage': '#000000', '--pad-bg': 'transparent', '--pad-edge': 'transparent', '--k-bg': 'rgba(255, 255, 255, 0.06)', '--k-edge': 'rgba(255, 255, 255, 0.2)', '--k-fg': '#ffffff', '--k-sub': 'rgba(255, 255, 255, 0.55)', '--dpad': 'rgba(255, 255, 255, 0.05)', '--arrow': 'rgba(255, 255, 255, 0.7)', '--hl': '#ffffff', '--hl-ink': '#000000', '--ok': 'rgba(255, 255, 255, 0.85)', '--ok-ink': '#000000', '--kr': '999px', '--glow': 'none' },
+  };
+  const THEME_VARS = Object.keys(THEMES.midnight).filter((k) => k !== 'name');
+  const ACCENTS = ['', '#ff8a1f', '#ff4d4d', '#ffd23f', '#3ddc84', '#2ad4c4', '#3d8bff', '#9b6bff', '#ff4fa3'];
+  const CTL_DEFAULT = { theme: 'midnight', accent: '', ks: 100, ds: 100, swap: false, nonum: false, haptic: true };
+  let ctl = Object.assign({}, CTL_DEFAULT);
+  try { Object.assign(ctl, JSON.parse(localStorage.getItem('kp:ctl') || '{}')); } catch (e) { /* storage blocked */ }
+  function saveCtl() { try { localStorage.setItem('kp:ctl', JSON.stringify(ctl)); } catch (e) { /* ignore */ } }
+
+  function inkFor(hex) {
+    const n = parseInt(hex.slice(1), 16);
+    const l = 0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255);
+    return l > 150 ? '#14110a' : '#ffffff';
+  }
+  function themeVars(id, accent) {
+    const t = Object.assign({}, THEMES[id] || THEMES.midnight);
+    if (accent) { t['--hl'] = t['--ok'] = accent; t['--hl-ink'] = t['--ok-ink'] = inkFor(accent); }
+    return t;
+  }
+  function applyControls() {
+    const p = $('player'), t = themeVars(ctl.theme, ctl.accent);
+    for (const k of THEME_VARS) p.style.setProperty(k, t[k]);
+    p.style.setProperty('--ks', ctl.ks / 100);
+    p.style.setProperty('--ds', ctl.ds / 100);
+    const dev = $('device');
+    dev.classList.toggle('swap', !!ctl.swap);
+    dev.classList.toggle('nonum', !!ctl.nonum);
+    dev.classList.toggle('can-rotate', CAN_ROTATE);
+    dirty = true;
+  }
+
+  // phone rotation: the app locks the orientation natively; a phone browser can only lock it in full screen
+  const CAN_ROTATE = IN_APP || !!(window.screen && screen.orientation && screen.orientation.lock && window.matchMedia && matchMedia('(pointer: coarse)').matches);
+  const ORIENT_LABEL = { auto: 'Auto', portrait: 'Portrait', landscape: 'Landscape' };
+  function wantedOrientation() {
+    const o = current && current.orient;
+    if (o === 'portrait' || o === 'landscape') return o;
+    return prof && prof.landscape ? 'landscape' : 'portrait';
+  }
+  function lockOrientation(fromUser) {
+    const mode = wantedOrientation();
+    if (Bridge && Bridge.setOrientation) { Bridge.setOrientation(mode); return; }
+    if (!fromUser || !CAN_ROTATE) return;
+    (async () => {
+      try {
+        if (!document.fullscreenElement) await $('app').requestFullscreen();
+        await screen.orientation.lock(mode);
+      } catch (e) { toast('Turn your phone to ' + mode + '.'); }
+    })();
+  }
+  function setOrientation(mode, fromUser) {
+    current.orient = mode;
+    DB.put(current);
+    lockOrientation(fromUser);
+    toast('Phone: ' + ORIENT_LABEL[mode]);
+  }
+  function rotatePhone() {
+    if (!current) return;
+    const now = window.innerWidth > window.innerHeight ? 'landscape' : 'portrait';
+    setOrientation(now === 'landscape' ? 'portrait' : 'landscape', true);
+  }
+
   function applyLayout() {
     const dev = $('device');
     dev.classList.toggle('landscape', prof.landscape);
@@ -226,7 +299,8 @@
     const hideKeys = current.keypad === undefined ? prof.touch : !current.keypad;
     dev.classList.toggle('nokeys', hideKeys);
     $('player').classList.toggle('immersive', hideKeys && IN_APP);
-    if (Bridge && Bridge.setOrientation) Bridge.setOrientation(prof.landscape ? 'landscape' : 'portrait');
+    applyControls();
+    lockOrientation(false);
     if (Bridge && Bridge.setFullscreen) Bridge.setFullscreen(true);
     resizeDisplay();
   }
@@ -257,7 +331,7 @@
           muted: muted,
         },
         log: (s) => console.log('[game] ' + s),
-        warn: (s) => console.warn('[keyplay] ' + s),
+        warn: (s) => console.warn('[javaplay] ' + s),
         onError: (msg) => toast('Game error: ' + msg, 6000),
       });
     } catch (e) {
@@ -364,7 +438,7 @@
     const dir = { '-1': 'up', '-2': 'down', '-3': 'left', '-4': 'right' }[code];
     if (dir) $('dpad').classList.toggle(dir, on);
   }
-  function haptic() { if (Bridge && Bridge.vibrate) Bridge.vibrate(12); else if (navigator.vibrate) navigator.vibrate(8); }
+  function haptic() { if (!ctl.haptic) return; if (Bridge && Bridge.vibrate) Bridge.vibrate(12); else if (navigator.vibrate) navigator.vibrate(8); }
 
   document.querySelectorAll('.k[data-key], .ok[data-key]').forEach((el) => {
     const code = +el.dataset.key;
@@ -373,7 +447,8 @@
     el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up);
     el.addEventListener('contextmenu', (e) => e.preventDefault());
   });
-  document.querySelector('.k.menu').addEventListener('click', () => pauseMenu());
+  document.querySelector('[data-action="menu"]').addEventListener('click', () => pauseMenu());
+  document.querySelector('[data-action="rotate"]').addEventListener('click', () => rotatePhone());
   $('floatMenu').addEventListener('click', () => pauseMenu());
 
   // D-pad: slide between directions, diagonals in narrow bands
@@ -408,7 +483,12 @@
     ArrowUp: -1, ArrowDown: -2, ArrowLeft: -3, ArrowRight: -4, Enter: -5, NumpadEnter: -5, ' ': -5,
     F1: -6, F2: -7, '[': -6, ']': -7, Backspace: -8, Delete: -8, '*': 42, '#': 35, NumpadMultiply: 42,
   };
+  // custom keys from Controls → Keyboard keys: { KeyboardEvent.code: J2ME key code }, checked before the defaults
+  let keyBinds = {};
+  try { keyBinds = JSON.parse(localStorage.getItem('kp:keys') || '{}') || {}; } catch (e) { /* storage blocked */ }
+  let keyCapture = null; // set while the key editor waits for a key press
   function codeForKey(e) {
+    if (e.code && keyBinds[e.code] !== undefined) return keyBinds[e.code];
     if (e.key && e.key.length === 1 && e.key >= '0' && e.key <= '9') return 48 + (+e.key);
     if (KEYMAP[e.key] !== undefined) return KEYMAP[e.key];
     if (KEYMAP[e.code] !== undefined) return KEYMAP[e.code];
@@ -417,6 +497,7 @@
     return null;
   }
   window.addEventListener('keydown', (e) => {
+    if (keyCapture) { e.preventDefault(); keyCapture(e); return; }
     KP.audio.unlock();
     if (!emu || $('player').hidden) return;
     if (!$('modal').hidden) { if (e.key === 'Escape' && closeSheet) closeSheet(); return; }
@@ -494,15 +575,23 @@
     const resume = () => { menuOpen = false; resumeEmu(); };
     sheet(current.name, (body, close) => {
       body.appendChild(opt('', 'Resume', () => close(), 'primary'));
+      if (CAN_ROTATE) {
+        const o = current.orient || 'auto';
+        body.appendChild(opt('📱', 'Phone orientation', () => {
+          close();
+          setOrientation(o === 'auto' ? 'landscape' : o === 'landscape' ? 'portrait' : 'auto', true);
+        }, '', ORIENT_LABEL[o]));
+      }
       const keysOn = !$('device').classList.contains('nokeys');
       body.appendChild(opt('⌨', 'Keypad', () => { close(); current.keypad = !keysOn; DB.put(current); applyLayout(); }, '', keysOn ? 'On' : 'Off'));
-      body.appendChild(opt('⟳', 'Rotate screen', () => {
+      body.appendChild(opt('🎨', 'Controls & theme', () => controlsSheet(), '', THEMES[ctl.theme] ? THEMES[ctl.theme].name : ''));
+      body.appendChild(opt('⟳', 'Turn game picture', () => {
         close();
         const next = prof.rotate === 0 ? 270 : prof.rotate === 270 ? 90 : 0;
         saveOverride({ rotate: next });
         prof = profileOf(current);
         applyLayout();
-        toast('Rotation: ' + ROT_LABEL[next]);
+        toast('Game picture: ' + ROT_LABEL[next]);
       }, '', ROT_LABEL[prof.rotate] || 'Off'));
       body.appendChild(opt('▣', 'Screen size', () => { close(); sizeMenu(); }, '', prof.w + '×' + prof.h));
       body.appendChild(opt('♪', 'Sound', () => { close(); setMuted(!muted); }, '', muted ? 'Off' : 'On'));
@@ -527,6 +616,169 @@
       }
     }, () => { menuOpen = false; resumeEmu(); });
   }
+
+  // ---------------- controls sheet (themes, sizes, sides, keyboard keys) ----------------
+  function inGame() { return !!emu && !$('player').hidden; }
+  function holdGame() {
+    if (!inGame()) return;
+    menuOpen = true; releaseAll(); pauseEmu();
+    $('modal').classList.add('peek'); // keypad stays visible behind the sheet as a live preview
+  }
+  function releaseGame() {
+    keyCapture = null;
+    $('modal').classList.remove('peek');
+    if (inGame()) { menuOpen = false; resumeEmu(); }
+  }
+  function section(body, title) {
+    const s = document.createElement('div'); s.className = 'sec';
+    const h = document.createElement('h3'); h.textContent = title; s.appendChild(h);
+    body.appendChild(s);
+    return s;
+  }
+  function setVal(btn, text) { btn.querySelector('.val').textContent = text; }
+
+  function controlsSheet() {
+    holdGame();
+    sheet('Controls & theme', (body, close) => {
+      const changed = () => { saveCtl(); applyControls(); };
+
+      const themeGrid = document.createElement('div'); themeGrid.className = 'themes';
+      section(body, 'Keypad theme').appendChild(themeGrid);
+      const swatches = document.createElement('div'); swatches.className = 'swatches';
+      section(body, 'Button colour').appendChild(swatches);
+      function renderLooks() {
+        themeGrid.innerHTML = '';
+        for (const id of Object.keys(THEMES)) {
+          const b = document.createElement('button'); b.type = 'button'; b.className = 'tcard';
+          b.setAttribute('aria-pressed', String(ctl.theme === id));
+          const pv = document.createElement('span'); pv.className = 'pv';
+          const vars = themeVars(id, ctl.accent);
+          for (const k of THEME_VARS) pv.style.setProperty(k, vars[k]);
+          pv.innerHTML = '<i></i><b></b><i class="hl"></i>';
+          const nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = THEMES[id].name;
+          b.append(pv, nm);
+          b.addEventListener('click', () => { ctl.theme = id; changed(); renderLooks(); });
+          themeGrid.appendChild(b);
+        }
+        swatches.innerHTML = '';
+        for (const c of ACCENTS) {
+          const s = document.createElement('button'); s.type = 'button'; s.className = 'sw';
+          s.setAttribute('aria-pressed', String((ctl.accent || '') === c));
+          s.setAttribute('aria-label', c ? 'Colour ' + c : 'Theme colour');
+          if (c) s.style.background = c;
+          else { s.style.background = (THEMES[ctl.theme] || THEMES.midnight)['--hl']; s.style.color = (THEMES[ctl.theme] || THEMES.midnight)['--hl-ink']; s.textContent = 'A'; }
+          s.addEventListener('click', () => { ctl.accent = c; changed(); renderLooks(); });
+          swatches.appendChild(s);
+        }
+      }
+      renderLooks();
+
+      const sizes = section(body, 'Size');
+      [['ks', 'Buttons'], ['ds', 'D-pad']].forEach(([key, label]) => {
+        const row = document.createElement('div'); row.className = 'range';
+        const id = 'ctl-' + key;
+        row.innerHTML = '<label for="' + id + '"></label><input type="range" min="70" max="150" step="5" id="' + id + '"><output></output>';
+        row.querySelector('label').textContent = label;
+        const input = row.querySelector('input'), out = row.querySelector('output');
+        input.value = ctl[key]; out.textContent = ctl[key] + '%';
+        input.addEventListener('input', () => { ctl[key] = +input.value; out.textContent = input.value + '%'; changed(); });
+        sizes.appendChild(row);
+      });
+
+      const lay = section(body, 'Layout');
+      const side = opt('↔', 'D-pad side (phone sideways)', () => { ctl.swap = !ctl.swap; changed(); setVal(side, ctl.swap ? 'Right' : 'Left'); }, '', ctl.swap ? 'Right' : 'Left');
+      const nums = opt('#', 'Number keys', () => { ctl.nonum = !ctl.nonum; changed(); setVal(nums, ctl.nonum ? 'Big 5 + OK' : 'Show'); }, '', ctl.nonum ? 'Big 5 + OK' : 'Show');
+      const vib = opt('〰', 'Vibrate on key press', () => { ctl.haptic = !ctl.haptic; changed(); setVal(vib, ctl.haptic ? 'On' : 'Off'); }, '', ctl.haptic ? 'On' : 'Off');
+      lay.append(side, nums, vib);
+      lay.appendChild(opt('⌨', 'Keyboard / controller keys', () => keysSheet(), '', Object.keys(keyBinds).length ? Object.keys(keyBinds).length + ' custom' : 'Default'));
+      lay.appendChild(opt('↺', 'Reset controls', () => {
+        ctl = Object.assign({}, CTL_DEFAULT); changed(); controlsSheet();
+      }));
+
+      body.appendChild(opt('', 'Done', () => close(), 'primary'));
+    }, releaseGame);
+  }
+
+  const KEY_ACTIONS = [
+    [-1, 'Up', '↑'], [-2, 'Down', '↓'], [-3, 'Left', '←'], [-4, 'Right', '→'], [-5, 'OK / Fire', 'Enter · Space'],
+    [-6, 'Left soft key', 'F1 · Q'], [-7, 'Right soft key', 'F2 · E'], [-8, 'Clear (C)', 'Backspace'],
+    [49, '1', '1'], [50, '2', '2'], [51, '3', '3'], [52, '4', '4'], [53, '5', '5'], [54, '6', '6'],
+    [55, '7', '7'], [56, '8', '8'], [57, '9', '9'], [42, '*', '*'], [48, '0', '0'], [35, '#', '#'],
+  ];
+  function keyName(c) {
+    if (/^Key[A-Z]$/.test(c)) return c.slice(3);
+    if (/^Digit\d$/.test(c)) return c.slice(5);
+    if (/^Numpad\d$/.test(c)) return 'Num ' + c.slice(6);
+    return { ArrowUp: '↑', ArrowDown: '↓', ArrowLeft: '←', ArrowRight: '→', ShiftLeft: 'L-Shift', ShiftRight: 'R-Shift', ControlLeft: 'L-Ctrl', ControlRight: 'R-Ctrl', AltLeft: 'L-Alt', AltRight: 'R-Alt' }[c] || c;
+  }
+  function saveKeys() { try { localStorage.setItem('kp:keys', JSON.stringify(keyBinds)); } catch (e) { /* ignore */ } }
+
+  function keysSheet() {
+    holdGame();
+    sheet('Keyboard / controller keys', (body, close) => {
+      const p = document.createElement('p'); p.className = 'info';
+      p.textContent = 'Tap a phone key, then press the keyboard or game-controller key you want for it. The default keys keep working.';
+      body.appendChild(p);
+      const list = document.createElement('div'); body.appendChild(list);
+      function render(waiting) {
+        list.innerHTML = '';
+        for (const [code, label, def] of KEY_ACTIONS) {
+          const mine = Object.keys(keyBinds).filter((c) => keyBinds[c] === code).map(keyName);
+          const b = opt('', label, () => {
+            render(code);
+            keyCapture = (e) => {
+              keyCapture = null;
+              if (e.key === 'Escape' || !e.code) { render(); return; }
+              for (const c of Object.keys(keyBinds)) if (keyBinds[c] === code) delete keyBinds[c];
+              keyBinds[e.code] = code;
+              saveKeys(); render();
+            };
+          }, 'keyrow' + (waiting === code ? ' wait' : ''), '');
+          const v = b.querySelector('.val');
+          if (waiting === code) v.textContent = 'Press a key…';
+          else { if (mine.length) { const m = document.createElement('b'); m.textContent = mine.join(' · '); v.appendChild(m); } v.appendChild(document.createTextNode(def)); }
+          list.appendChild(b);
+        }
+      }
+      render();
+      const row = document.createElement('div'); row.className = 'row';
+      row.append(opt('', 'Reset keys', () => { keyBinds = {}; saveKeys(); keyCapture = null; render(); }), opt('', 'Back', () => controlsSheet(), 'primary'));
+      body.appendChild(row);
+    }, releaseGame);
+  }
+
+  // ---------------- about / credits ----------------
+  const NETWORK = [
+    ['https://codelove.in', 'CodeLove', 'codelove.in'],
+    ['https://models.codelove.in', 'Free 3D Models', 'models.codelove.in'],
+    ['https://games.codelove.in', 'Free 3D Games', 'games.codelove.in'],
+    ['https://downloader.codelove.in', 'Insta & Pinterest Downloader', 'downloader.codelove.in'],
+    ['https://linkinbio.codelove.in', 'Link in Bio', 'linkinbio.codelove.in'],
+    ['https://videotogif.codelove.in', 'Video to GIF', 'videotogif.codelove.in'],
+    ['https://videotoimages.codelove.in', 'Video to Images', 'videotoimages.codelove.in'],
+    ['https://utubeflow.codelove.in', 'Free YouTube Automation', 'utubeflow.codelove.in'],
+  ];
+  function aboutSheet() {
+    sheet('About JavaPlay', (body, close) => {
+      const sites = NETWORK.map(([u, n, d]) => '<a href="' + u + '" target="_blank" rel="noopener">' + esc(n) + '<small>' + esc(d) + '</small></a>').join('');
+      body.insertAdjacentHTML('beforeend',
+        '<div class="about-top"><img src="assets/javaplay-logo.png" alt="" width="56" height="56"><div><strong>JavaPlay</strong>' +
+        '<span>Version ' + VERSION + (IN_APP ? ' · Android app' : ' · Web player') + '<br>Free J2ME emulator for old Java phone games</span></div></div>' +
+        '<div class="sec"><h3>Credits</h3>' +
+        '<a class="credit" href="https://gowtham.codelove.in" target="_blank" rel="noopener"><span class="av">G</span><span><strong>Made by Gowtham</strong><small>Design, code and the JavaPlay engine · gowtham.codelove.in</small></span><span class="go">›</span></a>' +
+        '<a class="credit" href="https://codelove.in" target="_blank" rel="noopener"><span class="av cl">♥</span><span><strong>A CodeLove product</strong><small>Free tools and games · codelove.in</small></span><span class="go">›</span></a>' +
+        '<a class="credit" href="https://javaplay.codelove.in" target="_blank" rel="noopener"><span class="av">▶</span><span><strong>JavaPlay website</strong><small>Play in the browser, get the app · javaplay.codelove.in</small></span><span class="go">›</span></a>' +
+        '</div>' +
+        '<div class="sec"><h3>More from CodeLove</h3><div class="sites">' + sites + '</div></div>' +
+        '<a class="cl-banner" href="https://codelove.in" target="_blank" rel="noopener" aria-label="CodeLove – codelove.in"><img src="assets/codelove-footer.png" alt="CodeLove" width="704" height="144"></a>' +
+        '<p class="fine">The Java engine (bytecode VM, MIDP 2.0, Nokia UI) is written from scratch for JavaPlay. ' +
+        'Free games in the catalog belong to their authors and are shared under their own open licenses; see each game\'s details.<br>' +
+        'Made with <span class="heart">♥</span> by Gowtham · © ' + new Date().getFullYear() + ' CodeLove</p>');
+      body.appendChild(opt('', 'Close', () => close(), 'primary'));
+    });
+  }
+  $('aboutBtn').addEventListener('click', () => aboutSheet());
+  $('ctlBtn').addEventListener('click', () => controlsSheet());
 
   // ---------------- sound / fullscreen ----------------
   let muted = false;
@@ -723,7 +975,7 @@
   home.addEventListener('drop', (e) => handleFiles(Array.from(e.dataTransfer.files || [])));
 
   // called by the Android app
-  window.KeyPlayApp = {
+  window.JavaPlayApp = {
     async openJarBase64(name, b64) {
       const bin = atob(b64);
       const bytes = new Uint8Array(bin.length);
@@ -747,6 +999,7 @@
       return;
     }
     await DB.open();
+    applyControls();
     await renderLibrary();
     // ?jar=<url> loads a game directly (demo links and automated tests); &size=WxH &touch=1 &rotate=270
     const q = new URLSearchParams(location.search);

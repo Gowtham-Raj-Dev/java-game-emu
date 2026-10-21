@@ -4,14 +4,14 @@
     <color name="kp_bg">#0E1014</color>
 
     <!-- launch theme: logo splash while the app starts -->
-    <style name="KeyPlayTheme" parent="@android:style/Theme.Material.NoActionBar">
+    <style name="JavaPlayTheme" parent="@android:style/Theme.Material.NoActionBar">
         <item name="android:windowBackground">@drawable/splash</item>
         <item name="android:colorAccent">#FF8A1F</item>
         <item name="android:statusBarColor">#171A21</item>
         <item name="android:navigationBarColor">#0E1014</item>
     </style>
 
-    <style name="KeyPlayTheme.Main">
+    <style name="JavaPlayTheme.Main">
         <item name="android:windowBackground">@color/kp_bg</item>
     </style>
 </resources>

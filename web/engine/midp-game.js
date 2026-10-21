@@ -1,4 +1,4 @@
-/* KeyPlay engine – javax.microedition.lcdui.game: Layer, Sprite, TiledLayer, LayerManager. */
+/* JavaPlay engine – javax.microedition.lcdui.game: Layer, Sprite, TiledLayer, LayerManager. */
 (function (KP) {
   'use strict';
   const def = KP.native;

@@ -7,7 +7,7 @@ plugins {
 def webDir = rootProject.file('../web')
 tasks.register('copyWebAssets', Copy) {
     from(webDir) {
-        include 'play.html', 'app/**', 'engine/**', 'assets/javaplay-logo.png', 'assets/favicon.svg', 'assets/favicon-32.png'
+        include 'play.html', 'app/**', 'engine/**', 'assets/javaplay-logo.png', 'assets/favicon.svg', 'assets/favicon-32.png', 'assets/codelove-footer.png'
     }
     into layout.projectDirectory.dir('src/main/assets/web')
 }
@@ -21,8 +21,8 @@ android {
         applicationId 'in.codelove.keyplay'
         minSdk 21
         targetSdk 34
-        versionCode 4
-        versionName '2.2.0'
+        versionCode 5
+        versionName '2.3.0'
     }
 
     signingConfigs {

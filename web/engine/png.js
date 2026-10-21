@@ -1,4 +1,4 @@
-/* KeyPlay engine – synchronous PNG decoder (all color types / bit depths, tRNS, Adam7). */
+/* JavaPlay engine – synchronous PNG decoder (all color types / bit depths, tRNS, Adam7). */
 (function (KP) {
   'use strict';
 

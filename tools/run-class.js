@@ -1,4 +1,4 @@
-// Run a compiled Java class directory on the KeyPlay VM in Node: node run-class.js <dir> <MainClass>
+// Run a compiled Java class directory on the JavaPlay VM in Node: node run-class.js <dir> <MainClass>
 const fs = require('fs');
 const path = require('path');
 const KP = require('./load-engine.js')(['inflate.js', 'zip.js', 'png.js', 'classfile.js', 'vm.js', 'jlib.js']);

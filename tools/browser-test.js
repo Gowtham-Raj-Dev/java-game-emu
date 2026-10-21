@@ -1,4 +1,4 @@
-﻿// Drive the real KeyPlay web player in Edge: load a JAR, press keys over time, take screenshots, collect console output.
+// Drive the real JavaPlay web player in Edge: load a JAR, press keys over time, take screenshots, collect console output.
 // usage: node browser-test.js <jarName in /_local/> <outPrefix> [w h] [steps...]
 //   step:  wait:<ms> | key:<code>[:holdMs] | shot:<name> | tap:<x>:<y> (game coords)
 const puppeteer = require('puppeteer-core');

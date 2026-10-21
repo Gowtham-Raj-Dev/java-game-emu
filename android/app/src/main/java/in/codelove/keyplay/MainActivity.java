@@ -46,6 +46,7 @@ import java.io.OutputStream;
  * Assets are served from a private https origin so storage, audio and recording work like a website.
  */
 public class MainActivity extends Activity {
+	// private origin kept from the KeyPlay days: changing it would wipe every user's saved games and settings
 	private static final String ORIGIN = "https://keyplay.app/";
 	private static final int PICK_FILES = 1;
 
@@ -58,7 +59,7 @@ public class MainActivity extends Activity {
 	@SuppressLint("SetJavaScriptEnabled")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		setTheme(R.style.KeyPlayTheme_Main);
+		setTheme(R.style.JavaPlayTheme_Main);
 		super.onCreate(savedInstanceState);
 		Window w = getWindow();
 		w.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -86,7 +87,7 @@ public class MainActivity extends Activity {
 		s.setSupportZoom(false);
 		s.setTextZoom(100);
 		web.setOverScrollMode(View.OVER_SCROLL_NEVER);
-		web.addJavascriptInterface(new Bridge(), "KeyPlayAndroid");
+		web.addJavascriptInterface(new Bridge(), "JavaPlayAndroid");
 		web.setWebViewClient(new Client());
 		web.setWebChromeClient(new Chrome());
 		setContentView(web);
@@ -109,7 +110,7 @@ public class MainActivity extends Activity {
 			try {
 				byte[] bytes = readAll(uri);
 				String name = displayName(uri);
-				String js = "window.KeyPlayApp&&KeyPlayApp.openJarBase64(" + JSONObject.quote(name) + ",'"
+				String js = "window.JavaPlayApp&&JavaPlayApp.openJarBase64(" + JSONObject.quote(name) + ",'"
 						+ Base64.encodeToString(bytes, Base64.NO_WRAP) + "')";
 				runOnUiThread(() -> {
 					if (pageReady) web.evaluateJavascript(js, null);
@@ -144,7 +145,7 @@ public class MainActivity extends Activity {
 
 	@Override
 	public void onBackPressed() {
-		web.evaluateJavascript("window.KeyPlayApp?KeyPlayApp.back():false", v -> {
+		web.evaluateJavascript("window.JavaPlayApp?JavaPlayApp.back():false", v -> {
 			if (!"true".equals(v)) finish();
 		});
 	}
@@ -261,7 +262,7 @@ public class MainActivity extends Activity {
 		}
 	}
 
-	/** Called from JavaScript as window.KeyPlayAndroid. */
+	/** Called from JavaScript as window.JavaPlayAndroid. */
 	private class Bridge {
 		@JavascriptInterface
 		public void vibrate(int ms) {
@@ -275,7 +276,7 @@ public class MainActivity extends Activity {
 		public void setOrientation(String mode) {
 			runOnUiThread(() -> {
 				if ("landscape".equals(mode)) setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
-				else if ("portrait".equals(mode)) setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+				else if ("portrait".equals(mode)) setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);
 				else setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
 			});
 		}
@@ -311,9 +312,9 @@ public class MainActivity extends Activity {
 						out.write(data);
 					}
 				}
-				runOnUiThread(() -> web.evaluateJavascript("window.KeyPlayApp&&KeyPlayApp.videoSaved(true)", null));
+				runOnUiThread(() -> web.evaluateJavascript("window.JavaPlayApp&&JavaPlayApp.videoSaved(true)", null));
 			} catch (IOException e) {
-				runOnUiThread(() -> web.evaluateJavascript("window.KeyPlayApp&&KeyPlayApp.videoSaved(false)", null));
+				runOnUiThread(() -> web.evaluateJavascript("window.JavaPlayApp&&JavaPlayApp.videoSaved(false)", null));
 			}
 		}
 	}

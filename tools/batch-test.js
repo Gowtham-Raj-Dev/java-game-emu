@@ -1,4 +1,4 @@
-// Smoke-test many JARs on the KeyPlay engine (headless). usage: node batch-test.js <dir-with-jars> <out.json> [parallel] [seconds]
+// Smoke-test many JARs on the JavaPlay engine (headless). usage: node batch-test.js <dir-with-jars> <out.json> [parallel] [seconds]
 const fs = require('fs');
 const path = require('path');
 const { spawn } = require('child_process');
