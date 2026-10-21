@@ -5,7 +5,7 @@
   const $ = (id) => document.getElementById(id);
   const Bridge = window.JavaPlayAndroid || null; // present inside the Android app
   const IN_APP = !!Bridge;
-  const VERSION = (Bridge && Bridge.versionName && Bridge.versionName()) || '2.4.0';
+  const VERSION = (Bridge && Bridge.versionName && Bridge.versionName()) || '2.4.1';
 
   // ---------------- IndexedDB game library ----------------
   const DB = {

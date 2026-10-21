@@ -1,9 +1,10 @@
 {
-    "versionCode": 6,
-    "versionName": "2.4.0",
+    "versionCode": 7,
+    "versionName": "2.4.1",
     "kb": 234,
-    "apk": "https://javaplay.codelove.in/download/JavaPlay.apk?v=6",
+    "apk": "https://javaplay.codelove.in/download/JavaPlay.apk?v=7",
     "notes": [
+        "Free games show their screenshots again on older phones",
         "Update right inside the app: no need to visit the website again",
         "Rotate button: play any game with the phone sideways",
         "Landscape layout: D-pad left, game in the centre, keys right",

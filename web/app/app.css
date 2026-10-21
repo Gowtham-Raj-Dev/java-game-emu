@@ -302,11 +302,13 @@ a { color: var(--accent); }
 .store-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
 .scard { display: flex; flex-direction: column; background: var(--card); border: 1px solid #282d38; border-radius: 18px; padding: 8px 8px 10px; cursor: pointer; text-align: left; min-width: 0; transition: transform .12s ease; }
 .scard:active { transform: scale(0.97); }
-.shot { position: relative; border-radius: 12px; overflow: hidden; background: #000; border: 3px solid #0b0c10; }
+.shot { display: block; position: relative; border-radius: 12px; overflow: hidden; background: #000; border: 3px solid #0b0c10; }
 .shot::before { content: ""; display: block; padding-top: 133.33%; }
 .shot img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; image-rendering: pixelated; }
 .shot .ico { position: absolute; left: 6px; bottom: 6px; width: 30px; height: 30px; top: auto; border-radius: 8px; background: #0b0c10; border: 2px solid rgba(255, 255, 255, 0.14); object-fit: contain; }
 .shot .got { position: absolute; top: 6px; right: 6px; padding: 2px 8px; border-radius: 999px; background: rgba(14, 16, 20, 0.8); color: #7ee2a8; font: 600 0.68rem var(--mono); }
+/* old WebViews do not stretch children of a flex <button> */
+.scard .shot, .scard .nm, .scard .ct { display: block; width: 100%; }
 .scard .nm { font-weight: 700; margin: 9px 2px 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .scard .ct { font: 500 0.72rem var(--mono); color: var(--accent); margin: 0 2px; }
 .store-msg { max-width: 420px; margin: 30px auto; text-align: center; color: var(--muted); }
