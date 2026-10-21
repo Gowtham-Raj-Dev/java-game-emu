@@ -137,7 +137,19 @@ a { color: var(--accent); }
 .ok { position: absolute; left: 31%; top: 31%; width: 38%; height: 38%; border-radius: 50%; border: 0; background: var(--accent); color: var(--accent-ink); font-weight: 800; letter-spacing: 0.04em; cursor: pointer; touch-action: none; }
 .ok.down { background: #ffb066; }
 
-/* landscape: D-pad left, screen centre, numpad right */
+/* portrait on a phone: keep the keypad compact so the game screen gets the room */
+@media (max-aspect-ratio: 5/4) {
+  .device.portrait .keypad { grid-gap: 6px; padding: 8px; border-radius: 18px; margin-top: 6px; }
+  .device.portrait .kp-left, .device.portrait .kp-right { grid-gap: 6px; }
+  .device.portrait .k { min-height: 36px; border-radius: 12px; }
+  .device.portrait .numpad { grid-gap: 5px; }
+  .device.portrait .numpad .k { min-height: 0; height: clamp(30px, 4.8vh, 42px); font-size: 1.05rem; }
+  .device.portrait .numpad .k small { display: none; }
+  .device.portrait .dpad { max-width: min(140px, 18vh); }
+}
+
+/* landscape games, and every game on a wide screen (desktop, phone held sideways):
+   soft keys + D-pad on the left, big screen in the centre, soft keys + numpad on the right */
 .device.landscape { display: grid; grid-template-columns: minmax(130px, 0.9fr) minmax(0, 3fr) minmax(140px, 1fr); grid-template-rows: auto 1fr; grid-template-areas: "kl screen kr" "dpad screen num"; grid-gap: 10px; max-width: none; }
 .device.landscape .screen-wrap { grid-area: screen; }
 .device.landscape .keypad { display: contents; }
@@ -145,10 +157,24 @@ a { color: var(--accent); }
 .device.landscape .dpad { max-width: 170px; }
 .device.landscape .numpad { align-self: center; }
 .device.landscape .numpad .k { min-height: 34px; font-size: 1rem; }
+@media (min-aspect-ratio: 5/4) {
+  .device.portrait, .device.landscape {
+    display: grid; max-width: 1400px; grid-gap: 14px 22px; align-content: stretch;
+    grid-template-columns: minmax(150px, 250px) minmax(0, 1fr) minmax(170px, 270px);
+    grid-template-rows: 1fr auto auto 1fr; grid-template-areas: ". screen ." "kl screen kr" "dpad screen num" ". screen .";
+  }
+  .device.portrait .screen-wrap, .device.landscape .screen-wrap { grid-area: screen; height: 100%; }
+  .device.portrait .keypad, .device.landscape .keypad { display: contents; }
+  .device.portrait .kp-left, .device.portrait .kp-right, .device.landscape .kp-left, .device.landscape .kp-right { grid-template-rows: none; grid-template-columns: 1fr 1fr; align-self: end; }
+  .device.portrait .k, .device.landscape .k { min-height: 52px; }
+  .device.portrait .dpad, .device.landscape .dpad { max-width: min(220px, 34vh); align-self: center; }
+  .device.portrait .numpad, .device.landscape .numpad { align-self: center; }
+  .device.portrait .numpad .k, .device.landscape .numpad .k { min-height: 0; height: clamp(36px, 7.5vh, 54px); font-size: 1.1rem; }
+}
 
 /* touch games / keypad hidden */
 .device.nokeys .keypad { display: none; }
-.device.nokeys.landscape { display: flex; }
+.device.nokeys.landscape, .device.nokeys.portrait { display: flex; }
 .device.nokeys { max-width: none; }
 .player.immersive { padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px); }
 .player.immersive .screen-wrap { border-radius: 0; }

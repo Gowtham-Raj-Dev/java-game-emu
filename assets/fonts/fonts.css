@@ -1,0 +1,23 @@
+/* Self-hosted fonts (latin subset, variable weight). Pages preload the woff2 files, and
+   font-display: block keeps the fallback font from flashing before the real one swaps in. */
+@font-face {
+  font-family: 'Bricolage Grotesque';
+  font-style: normal;
+  font-weight: 600 800;
+  font-display: block;
+  src: url(bricolage.woff2) format('woff2');
+}
+@font-face {
+  font-family: 'Figtree';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: block;
+  src: url(figtree.woff2) format('woff2');
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: block;
+  src: url(jetbrains-mono.woff2) format('woff2');
+}
