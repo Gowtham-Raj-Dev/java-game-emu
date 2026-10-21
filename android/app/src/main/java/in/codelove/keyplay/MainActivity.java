@@ -221,6 +221,9 @@ public class MainActivity extends Activity {
 			w.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
 			d.setSystemUiVisibility(0);
 		}
+		// re-measure right away so the page does not keep the full-screen insets (gap above the home screen)
+		if (Build.VERSION.SDK_INT >= 20) d.requestApplyInsets();
+		web.requestLayout();
 	}
 
 	private class Client extends WebViewClient {
