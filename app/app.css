@@ -276,8 +276,8 @@ a { color: var(--accent); }
 .cl-banner img { display: block; width: 100%; height: auto; }
 .credit small { display: block; color: var(--muted); font-size: 0.8rem; }
 .credit .go { margin-left: auto; color: var(--muted); font-size: 1.2rem; }
-.sites { display: grid; grid-template-columns: 1fr 1fr; grid-gap: 8px; }
-.sites a { display: block; padding: 10px 12px; border-radius: 12px; background: var(--card); border: 1px solid #282d38; color: var(--fg); text-decoration: none; font-size: 0.86rem; font-weight: 600; line-height: 1.3; }
+.sites { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-gap: 8px; }
+.sites a { display: block; min-width: 0; overflow-wrap: anywhere; padding: 10px 12px; border-radius: 12px; background: var(--card); border: 1px solid #282d38; color: var(--fg); text-decoration: none; font-size: 0.86rem; font-weight: 600; line-height: 1.3; }
 .sites a small { display: block; color: var(--muted); font: 500 0.7rem var(--mono); margin-top: 2px; }
 .sites a:active, .sites a:hover { border-color: var(--accent); }
 .fine { color: var(--muted); font-size: 0.8rem; line-height: 1.5; margin: 14px 2px 4px; }
