@@ -21,8 +21,8 @@ android {
         applicationId 'in.codelove.keyplay'
         minSdk 21
         targetSdk 34
-        versionCode 8
-        versionName '2.5.0'
+        versionCode 9
+        versionName '2.5.1'
     }
 
     signingConfigs {
@@ -61,6 +61,7 @@ def releaseNotes = [
     'Auto rotate: turn your phone and the game screen and keys follow',
     'Update now opens the website and downloads the new app',
     'About and credits always open from the top',
+    'Fixed the CodeLove links box on older phones',
 ]
 def relCode = android.defaultConfig.versionCode
 def relName = android.defaultConfig.versionName
