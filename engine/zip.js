@@ -1,4 +1,4 @@
-/* KeyPlay engine – JAR (ZIP) reader with lazy, synchronous entry extraction. */
+/* JavaPlay engine – JAR (ZIP) reader with lazy, synchronous entry extraction. */
 (function (KP) {
   'use strict';
 

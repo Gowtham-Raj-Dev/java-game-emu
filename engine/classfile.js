@@ -1,4 +1,4 @@
-/* KeyPlay engine – Java .class file parser. */
+/* JavaPlay engine – Java .class file parser. */
 (function (KP) {
   'use strict';
 

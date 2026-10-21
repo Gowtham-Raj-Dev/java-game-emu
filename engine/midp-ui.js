@@ -1,4 +1,4 @@
-/* KeyPlay engine – MIDP high-level UI (List, Form, Alert, TextBox, Items), rendered phone-style into the screen. */
+/* JavaPlay engine – MIDP high-level UI (List, Form, Alert, TextBox, Items), rendered phone-style into the screen. */
 (function (KP) {
   'use strict';
   const def = KP.native;

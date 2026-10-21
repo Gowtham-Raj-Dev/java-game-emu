@@ -1,4 +1,4 @@
-/* KeyPlay engine – audio: MIDI synth, MMAPI tone sequences, Nokia OTT ringtones, sampled audio (WebAudio). */
+/* JavaPlay engine – audio: MIDI synth, MMAPI tone sequences, Nokia OTT ringtones, sampled audio (WebAudio). */
 (function (KP) {
   'use strict';
 

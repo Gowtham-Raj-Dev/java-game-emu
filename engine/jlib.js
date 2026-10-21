@@ -1,4 +1,4 @@
-/* KeyPlay engine – CLDC 1.1 class library (java.lang, java.util, java.io) implemented in JS. */
+/* JavaPlay engine – CLDC 1.1 class library (java.lang, java.util, java.io) implemented in JS. */
 (function (KP) {
   'use strict';
   const def = KP.native;

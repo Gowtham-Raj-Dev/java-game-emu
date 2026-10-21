@@ -1,4 +1,4 @@
-/* KeyPlay engine – MIDlet, RMS, MMAPI (javax.microedition.media), Nokia UI API, I/O and vendor stubs. */
+/* JavaPlay engine – MIDlet, RMS, MMAPI (javax.microedition.media), Nokia UI API, I/O and vendor stubs. */
 (function (KP) {
   'use strict';
   const def = KP.native;

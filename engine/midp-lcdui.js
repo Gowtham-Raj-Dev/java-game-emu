@@ -1,4 +1,4 @@
-/* KeyPlay engine – MIDP 2.0 LCDUI core: Display, Displayable, Canvas, GameCanvas, Graphics, Image, Font, Command. */
+/* JavaPlay engine – MIDP 2.0 LCDUI core: Display, Displayable, Canvas, GameCanvas, Graphics, Image, Font, Command. */
 (function (KP) {
   'use strict';
   const def = KP.native;
