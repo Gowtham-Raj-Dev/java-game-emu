@@ -160,31 +160,10 @@ public class MainActivity extends Activity {
 	protected void onResume() {
 		super.onResume();
 		web.onResume();
-		// back from "Install unknown apps" settings: continue the update if it was allowed
-		if (installPending && canInstall()) {
-			installPending = false;
-			installUpdate();
-		}
 	}
 
-	// ---------------- in-app update ----------------
-	private static final String UPDATE_HOST = "https://javaplay.codelove.in/";
-	private boolean installPending;
-	private volatile boolean downloading;
-
-	private File updateFile() {
-		// the installer on Android 6 and older only reads file:// URIs from shared storage
-		if (Build.VERSION.SDK_INT < 24) return new File(getExternalFilesDir(null), UpdateProvider.NAME);
-		return UpdateProvider.apkFile(this);
-	}
-
-	private boolean canInstall() {
-		return Build.VERSION.SDK_INT < 26 || getPackageManager().canRequestPackageInstalls();
-	}
-
-	private void js(String code) {
-		runOnUiThread(() -> web.evaluateJavascript("window.JavaPlayApp&&" + code, null));
-	}
+	// ---------------- version / updates ----------------
+	// Updates are downloaded from the website in the phone's browser; the app only knows its own version.
 
 	@SuppressWarnings("deprecation")
 	private int currentVersionCode() {
@@ -195,98 +174,12 @@ public class MainActivity extends Activity {
 		}
 	}
 
-	private void downloadUpdate(String url) {
-		if (downloading) return;
-		if (url == null || !url.startsWith(UPDATE_HOST)) {
-			js("JavaPlayApp.updateFailed('Bad update link')");
-			return;
-		}
-		downloading = true;
-		new Thread(() -> {
-			File out = updateFile();
-			File tmp = new File(out.getPath() + ".part");
-			try {
-				// Android may restart the app after "Install unknown apps" is allowed: reuse the finished download
-				if (isNewerApk(out)) {
-					runOnUiThread(this::installOrAskPermission);
-					return;
-				}
-				File dir = out.getParentFile();
-				if (dir != null && !dir.exists() && !dir.mkdirs()) throw new IOException("mkdir failed");
-				java.net.HttpURLConnection c = (java.net.HttpURLConnection) new java.net.URL(url).openConnection();
-				c.setConnectTimeout(15000);
-				c.setReadTimeout(30000);
-				c.setUseCaches(false);
-				if (c.getResponseCode() != 200) throw new IOException("HTTP " + c.getResponseCode());
-				long total = c.getContentLength();
-				long done = 0;
-				int lastPct = -1;
-				try (InputStream in = c.getInputStream(); FileOutputStream fo = new FileOutputStream(tmp)) {
-					byte[] buf = new byte[32768];
-					int n;
-					while ((n = in.read(buf)) > 0) {
-						fo.write(buf, 0, n);
-						done += n;
-						int pct = total > 0 ? (int) (done * 100 / total) : -1;
-						if (pct >= lastPct + 5 || pct == 100) {
-							lastPct = pct;
-							js("JavaPlayApp.updateProgress(" + pct + ")");
-						}
-					}
-				} finally {
-					c.disconnect();
-				}
-				if (out.exists() && !out.delete()) throw new IOException("delete failed");
-				if (!tmp.renameTo(out)) throw new IOException("rename failed");
-				// only hand over a real, newer JavaPlay build
-				if (!isNewerApk(out)) {
-					//noinspection ResultOfMethodCallIgnored
-					out.delete();
-					throw new IOException("not a newer JavaPlay");
-				}
-				runOnUiThread(this::installOrAskPermission);
-			} catch (Exception e) {
-				downloading = false;
-				//noinspection ResultOfMethodCallIgnored
-				tmp.delete();
-				js("JavaPlayApp.updateFailed(" + JSONObject.quote(e.getMessage() == null ? "Download failed" : e.getMessage()) + ")");
-			}
-		}).start();
-	}
-
-	@SuppressWarnings("deprecation")
-	private boolean isNewerApk(File f) {
-		if (!f.isFile()) return false;
-		android.content.pm.PackageInfo pi = getPackageManager().getPackageArchiveInfo(f.getPath(), 0);
-		return pi != null && getPackageName().equals(pi.packageName) && pi.versionCode > currentVersionCode();
-	}
-
-	private void installOrAskPermission() {
-		downloading = false;
-		if (canInstall()) {
-			installUpdate();
-			return;
-		}
-		installPending = true;
-		js("JavaPlayApp.updateNeedsPermission()");
+	private void openExternal(String url) {
+		if (url == null || !url.startsWith("https://")) return;
 		try {
-			startActivity(new Intent(android.provider.Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:" + getPackageName())));
+			startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
 		} catch (ActivityNotFoundException e) {
-			installPending = false;
-			js("JavaPlayApp.updateFailed('Allow JavaPlay to install apps in Settings')");
-		}
-	}
-
-	private void installUpdate() {
-		Uri uri = Build.VERSION.SDK_INT < 24 ? Uri.fromFile(updateFile()) : UpdateProvider.apkUri();
-		Intent i = new Intent(Intent.ACTION_VIEW);
-		i.setDataAndType(uri, UpdateProvider.MIME);
-		i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_ACTIVITY_NEW_TASK);
-		try {
-			startActivity(i);
-			js("JavaPlayApp.updateInstalling()");
-		} catch (ActivityNotFoundException e) {
-			js("JavaPlayApp.updateFailed('No installer found')");
+			Toast.makeText(this, "No browser found", Toast.LENGTH_LONG).show();
 		}
 	}
 
@@ -407,8 +300,8 @@ public class MainActivity extends Activity {
 		}
 
 		@JavascriptInterface
-		public void downloadUpdate(String url) {
-			runOnUiThread(() -> MainActivity.this.downloadUpdate(url));
+		public void openExternal(String url) {
+			runOnUiThread(() -> MainActivity.this.openExternal(url));
 		}
 
 		@JavascriptInterface
@@ -422,7 +315,9 @@ public class MainActivity extends Activity {
 		@JavascriptInterface
 		public void setOrientation(String mode) {
 			runOnUiThread(() -> {
-				if ("landscape".equals(mode)) setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
+				// "sensor" turns with the phone; "landscape" allows either landscape side
+				if ("sensor".equals(mode)) setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR);
+				else if ("landscape".equals(mode)) setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
 				else if ("portrait".equals(mode)) setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);
 				else setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
 			});

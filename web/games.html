@@ -144,6 +144,13 @@ a { color: var(--key); }
   .sheet { border-radius: 24px 24px 0 0; max-height: 90vh; padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px)); }
 }
 @media (prefers-reduced-motion: reduce) { .card, .btn { transition: none; } }
+
+/* inside the JavaPlay Android app (games?app=1 in the Free games tab): Play / ⬇ add the game to the app */
+.in-app .top nav .primary { display: none; }
+.in-app .card .acts .btn.dl { display: inline-flex; }
+.in-app .card .acts .btn.dl.got { color: #7ee2a8; }
+.app-toast { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 40; max-width: 90%; padding: 10px 16px; border-radius: 14px; background: #1b1e26; border: 1px solid var(--line); color: var(--fg); font-weight: 600; font-size: 0.92rem; text-align: center; box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5); }
+.app-toast[hidden] { display: none; }
 </style>
 </head>
 <body>
@@ -182,7 +189,7 @@ a { color: var(--key); }
       <div class="sf-brand">
         <a class="brand" href="./"><img src="assets/javaplay-logo.png" alt="" width="34" height="34" loading="lazy">JavaPlay</a>
         <p>Free J2ME emulator. Play old Java phone games in your browser or on Android, with a real phone keypad.</p>
-        <div class="sf-chips"><span>Free</span><span>No sign-up</span><span>177 KB app</span></div>
+        <div class="sf-chips"><span>Free</span><span>No sign-up</span><span>233 KB app</span></div>
       </div>
       <nav aria-label="Play">
         <h3>Play</h3>
@@ -264,17 +271,60 @@ a { color: var(--key); }
   let all = [], cat = 'All', q = '';
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
+  // Inside the JavaPlay app this page runs in a frame: Play / ⬇ ask the app to add the game to My games
+  const APP = /[?&]app=1\b/.test(location.search) && window.parent !== window;
+  let installed = new Set();
+  const send = (msg) => window.parent.postMessage(msg, '*');
+  let toastTimer = null;
+  function appToast(text) {
+    let t = document.querySelector('.app-toast');
+    if (!t) { t = document.createElement('div'); t.className = 'app-toast'; t.setAttribute('role', 'status'); document.body.appendChild(t); }
+    t.textContent = text; t.hidden = false;
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 2600);
+  }
+  if (APP) {
+    document.documentElement.classList.add('in-app');
+    window.addEventListener('message', (e) => {
+      if (e.source !== window.parent || !e.data) return;
+      const d = e.data;
+      if (d.type === 'javaplay:installed' && Array.isArray(d.ids)) { installed = new Set(d.ids); render(); }
+      else if (d.type === 'javaplay:added') appToast(d.ok ? (d.started ? 'Starting ' : 'Added to My games: ') + d.name : 'Download failed. Check your internet.');
+    });
+    document.addEventListener('click', (e) => {
+      const a = e.target.closest('a');
+      if (!a) return;
+      if (a.dataset.act) {
+        e.preventDefault();
+        if (a.dataset.act === 'add' && installed.has(a.dataset.id)) { appToast('Already in My games'); return; }
+        send({ type: 'javaplay:' + a.dataset.act, id: a.dataset.id });
+        if (a.dataset.act === 'add') appToast('Downloading…');
+        return;
+      }
+      // every other link leaves the games list: open it in the phone's browser
+      const href = a.getAttribute('href') || '';
+      if (href && href.charAt(0) !== '#') { e.preventDefault(); send({ type: 'javaplay:open', url: a.href }); }
+    }, true);
+    send({ type: 'javaplay:hello' });
+  }
+  function playAttrs(g) { return APP ? ' href="#" data-act="play" data-id="' + esc(g.id) + '"' : ' href="play?game=' + encodeURIComponent(g.id) + '"'; }
+  function dlAttrs(g) {
+    if (!APP) return ' href="' + esc(g.jar) + '" download';
+    return ' href="#" data-act="add" data-id="' + esc(g.id) + '"';
+  }
+
   function render() {
     const words = q.toLowerCase().split(/\s+/).filter(Boolean);
     const list = all.filter((g) => (cat === 'All' || g.cat === cat) && words.every((w) => (g.name + ' ' + g.cat + ' ' + g.desc).toLowerCase().includes(w)));
-    $('grid').innerHTML = list.map((g) =>
-      '<article class="card" tabindex="0" data-id="' + esc(g.id) + '" aria-label="' + esc(g.name) + '">' +
+    $('grid').innerHTML = list.map((g) => {
+      const got = APP && installed.has(g.id);
+      return '<article class="card" tabindex="0" data-id="' + esc(g.id) + '" aria-label="' + esc(g.name) + '">' +
       '<div class="screen">' + (g.shot ? '<img loading="lazy" alt="" src="' + esc(g.shot) + '">' : '') + '</div>' +
       '<h3>' + esc(g.name) + '</h3>' +
       '<div class="meta"><span class="cat">' + esc(g.cat) + '</span><span>' + g.kb + ' KB</span></div>' +
-      '<div class="acts"><a class="btn primary" href="play?game=' + encodeURIComponent(g.id) + '">▶ Play</a>' +
-      '<a class="btn dl" href="' + esc(g.jar) + '" download aria-label="Download ' + esc(g.name) + ' .jar">⬇</a></div>' +
-      '</article>').join('');
+      '<div class="acts"><a class="btn primary"' + playAttrs(g) + '>▶ Play</a>' +
+      '<a class="btn dl' + (got ? ' got' : '') + '"' + dlAttrs(g) + ' aria-label="' + (APP ? (got ? esc(g.name) + ' is in My games' : 'Add ' + esc(g.name) + ' to My games') : 'Download ' + esc(g.name) + ' .jar') + '">' + (got ? '✓' : '⬇') + '</a></div>' +
+      '</article>';
+    }).join('');
     $('empty').hidden = list.length > 0;
   }
 
@@ -295,8 +345,14 @@ a { color: var(--key); }
     $('dAuthor').textContent = g.author;
     $('dLic').textContent = g.license;
     $('dSrc').href = g.source;
-    $('dPlay').href = 'play?game=' + encodeURIComponent(g.id);
-    $('dDl').href = g.jar;
+    if (APP) {
+      Object.assign($('dPlay').dataset, { act: 'play', id: g.id }); $('dPlay').href = '#'; $('dPlay').textContent = '▶ Play in JavaPlay';
+      Object.assign($('dDl').dataset, { act: 'add', id: g.id }); $('dDl').href = '#'; $('dDl').removeAttribute('download');
+      $('dDl').textContent = installed.has(g.id) ? '✓ In My games' : '⬇ Add to My games';
+    } else {
+      $('dPlay').href = 'play?game=' + encodeURIComponent(g.id);
+      $('dDl').href = g.jar;
+    }
     $('modal').hidden = false;
     $('close').focus();
   }

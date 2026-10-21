@@ -2,9 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.VIBRATE" />
-    <!-- free games catalog + in-app updates -->
+    <!-- free games page + update check -->
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
     <application
         android:allowBackup="false"
@@ -47,13 +46,5 @@
                 <data android:pathPattern=".*\\.jar" />
                 <data android:pathPattern=".*\\..*\\.jar" />
             </intent-filter>
-        </activity>
-
-        <!-- hands the downloaded update APK to the system installer -->
-        <provider
-            android:name=".UpdateProvider"
-            android:authorities="in.codelove.keyplay.update"
-            android:exported="false"
-            android:grantUriPermissions="true" />
-    </application>
+        </activity>    </application>
 </manifest>

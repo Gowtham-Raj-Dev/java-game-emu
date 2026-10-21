@@ -21,8 +21,8 @@ android {
         applicationId 'in.codelove.keyplay'
         minSdk 21
         targetSdk 34
-        versionCode 7
-        versionName '2.4.1'
+        versionCode 8
+        versionName '2.5.0'
     }
 
     signingConfigs {
@@ -55,15 +55,12 @@ android {
 }
 
 // Release: `gradlew publishApk` builds the signed APK, copies it to web/download/JavaPlay.apk and writes
-// web/version.json. Installed apps read version.json on start and offer the update. Bump versionCode first.
+// web/version.json. Installed apps read version.json on start and send people to the website to update. Bump versionCode first.
 def releaseNotes = [
-    'Free games show their screenshots again on older phones',
-    'Update right inside the app: no need to visit the website again',
-    'Rotate button: play any game with the phone sideways',
-    'Landscape layout: D-pad left, game in the centre, keys right',
-    '8 keypad themes, button colours, button and D-pad size',
-    'Keyboard and game-controller key mapping',
-    'Free games now download inside the app',
+    'Free games: the javaplay.codelove.in/games page right inside the app. Play or tap download and the game goes into My games',
+    'Auto rotate: turn your phone and the game screen and keys follow',
+    'Update now opens the website and downloads the new app',
+    'About and credits always open from the top',
 ]
 def relCode = android.defaultConfig.versionCode
 def relName = android.defaultConfig.versionName
