@@ -1,11 +1,9 @@
 {
-    "versionCode": 13,
-    "versionName": "2.6.1",
+    "versionCode": 14,
+    "versionName": "2.6.2",
     "kb": 244,
-    "apk": "https://javaplay.codelove.in/download/JavaPlay.apk?v=13",
+    "apk": "https://javaplay.codelove.in/download/JavaPlay.apk?v=14",
     "notes": [
-        "Smoother games: the game screen is scaled by the GPU instead of being redrawn large every frame",
-        "New Other tab: PHONEKY, Internet Archive and Google in the built-in browser",
-        "Downloaded .jar games are saved in Downloads/JavaPlay and added to My games"
+        "Zombie Infection and other 480x800 touch games now run at full size with their own on-screen controls"
     ]
 }
