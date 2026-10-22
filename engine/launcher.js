@@ -49,7 +49,7 @@
     if (!found) {
       // games often hard-code their screen size: count sipush constants in the bytecode
       const best = bytecodeSize(jar);
-      if (best) { found = best; out.reason = 'bytecode'; if (best.touch) { out.touch = true; out.portraitTouch = true; } }
+      if (best) { found = best; out.reason = 'bytecode'; if (best.touch) { out.touch = true; out.portraitTouch = !best.turned; } }
     }
     if (found) { out.w = found[0]; out.h = found[1]; }
     // Gameloft WVGA (480x800) builds draw landscape turned 90°: show them turned back
@@ -70,7 +70,7 @@
   const PAIRS = [[128, 128], [128, 160], [176, 208], [176, 220], [240, 320], [240, 400], [352, 416], [360, 640], [480, 800]];
   function bytecodeSize(jar) {
     const count = {};
-    let pointerGame = false;
+    let pointerGame = false, sizeAware = false;
     for (const n of jar.names()) {
       if (!n.endsWith('.class')) continue;
       let cf;
@@ -78,6 +78,7 @@
       for (const m of cf.methods) {
         if (!m.code) continue;
         if (m.name === 'pointerPressed' && m.desc === '(II)V') pointerGame = true;
+        if (m.name === 'sizeChanged' && m.desc === '(II)V') sizeAware = true;
         const c = m.code.code;
         for (let i = 0; i + 2 < c.length; i++) {
           if (c[i] === 0x11) { const v = (c[i + 1] << 8) | c[i + 2]; if (v >= 128 && v <= 800) count[v] = (count[v] || 0) + 1; }
@@ -93,6 +94,8 @@
     // its own on-screen keypad (touch pad drawn by the game) ends up off the visible area
     if (pointerGame && (count[480] || 0) >= 3 && (count[800] || 0) >= 3 && (!best || best[0] < 480)) {
       best = [480, 800]; best.touch = true;
+      // a Canvas that overrides sizeChanged is a Gameloft build that draws landscape turned 90° (not portrait)
+      best.turned = sizeAware;
     }
     return best;
   }
