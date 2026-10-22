@@ -49,13 +49,13 @@
     if (!found) {
       // games often hard-code their screen size: count sipush constants in the bytecode
       const best = bytecodeSize(jar);
-      if (best) { found = best; out.reason = 'bytecode'; }
+      if (best) { found = best; out.reason = 'bytecode'; if (best.touch) { out.touch = true; out.portraitTouch = true; } }
     }
     if (found) { out.w = found[0]; out.h = found[1]; }
     // Gameloft WVGA (480x800) builds draw landscape turned 90°: show them turned back
     const vendor = (props['MIDlet-Vendor'] || '').toLowerCase();
     out.rotate = 0;
-    if (out.w === 480 && out.h === 800 && vendor.indexOf('gameloft') >= 0) out.rotate = 270;
+    if (out.w === 480 && out.h === 800 && vendor.indexOf('gameloft') >= 0 && !out.portraitTouch) out.rotate = 270;
     const orient = (props['Nokia-MIDlet-App-Orientation'] || props['MIDlet-Orientation'] || '').toLowerCase();
     if (orient === 'landscape' && out.w < out.h) { const t = out.w; out.w = out.h; out.h = t; }
     out.landscape = out.w > out.h;
@@ -70,12 +70,14 @@
   const PAIRS = [[128, 128], [128, 160], [176, 208], [176, 220], [240, 320], [240, 400], [352, 416], [360, 640], [480, 800]];
   function bytecodeSize(jar) {
     const count = {};
+    let pointerGame = false;
     for (const n of jar.names()) {
       if (!n.endsWith('.class')) continue;
       let cf;
       try { cf = KP.parseClass(jar.get(n)); } catch (e) { continue; }
       for (const m of cf.methods) {
         if (!m.code) continue;
+        if (m.name === 'pointerPressed' && m.desc === '(II)V') pointerGame = true;
         const c = m.code.code;
         for (let i = 0; i + 2 < c.length; i++) {
           if (c[i] === 0x11) { const v = (c[i + 1] << 8) | c[i + 2]; if (v >= 128 && v <= 800) count[v] = (count[v] || 0) + 1; }
@@ -85,6 +87,12 @@
     let best = null;
     for (const [w, h] of PAIRS) {
       if ((count[w] || 0) >= 8 && (count[h] || 0) >= 8) best = [w, h]; // largest pair that the code really uses
+    }
+    // a Canvas that handles pointer events and mentions 480 and 800 is a portrait WVGA touch game, even when
+    // smaller phone sizes are mentioned more often (multi-resolution builds): a smaller screen crops it and
+    // its own on-screen keypad (touch pad drawn by the game) ends up off the visible area
+    if (pointerGame && (count[480] || 0) >= 3 && (count[800] || 0) >= 3 && (!best || best[0] < 480)) {
+      best = [480, 800]; best.touch = true;
     }
     return best;
   }

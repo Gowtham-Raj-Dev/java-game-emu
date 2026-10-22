@@ -21,8 +21,8 @@ android {
         applicationId 'in.codelove.keyplay'
         minSdk 21
         targetSdk 34
-        versionCode 13
-        versionName '2.6.1'
+        versionCode 14
+        versionName '2.6.2'
     }
 
     signingConfigs {
@@ -57,9 +57,7 @@ android {
 // Release: `gradlew publishApk` builds the signed APK, copies it to web/download/JavaPlay.apk and writes
 // web/version.json. Installed apps read version.json on start and send people to the website to update. Bump versionCode first.
 def releaseNotes = [
-    'Smoother games: the game screen is scaled by the GPU instead of being redrawn large every frame',
-    'New Other tab: PHONEKY, Internet Archive and Google in the built-in browser',
-    'Downloaded .jar games are saved in Downloads/JavaPlay and added to My games',
+    'Zombie Infection and other 480x800 touch games now run at full size with their own on-screen controls',
 ]
 def relCode = android.defaultConfig.versionCode
 def relName = android.defaultConfig.versionName
