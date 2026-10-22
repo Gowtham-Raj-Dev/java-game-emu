@@ -1,9 +1,10 @@
 {
-    "versionCode": 14,
-    "versionName": "2.6.2",
+    "versionCode": 15,
+    "versionName": "2.6.3",
     "kb": 244,
-    "apk": "https://javaplay.codelove.in/download/JavaPlay.apk?v=14",
+    "apk": "https://javaplay.codelove.in/download/JavaPlay.apk?v=15",
     "notes": [
-        "Zombie Infection and other 480x800 touch games now run at full size with their own on-screen controls"
+        "Green Farm no longer shows a blank screen: games that redraw themselves every frame now paint correctly",
+        "Zombie Infection and other 480x800 touch games run at full size with their own on-screen controls"
     ]
 }

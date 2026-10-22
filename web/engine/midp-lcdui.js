@@ -540,7 +540,8 @@
         yield { block: () => !d._queue.length && !d._repaint };
         continue;
       }
-      const ev = d._queue.length ? d._queue.shift() : { type: 'paint' };
+      // MIDP: callSerially runs after pending repaints (games re-post themselves each frame and would starve paint)
+      const ev = d._queue.length && !(d._repaint && d._queue[0].type === 'serial') ? d._queue.shift() : { type: 'paint' };
       const cur = d._current;
       try {
         switch (ev.type) {

@@ -334,12 +334,12 @@
     stopGame();
     current = rec;
     rec.played = Date.now();
-    // games saved before portrait-WVGA touch detection existed were stored with a wrong (smaller) size
-    if (!rec.override && rec.w !== 480) {
+    // games saved before WVGA touch detection (or its portrait/landscape split) were stored with a wrong size or rotation
+    if (!rec.override) {
       try {
         const jar = new KP.Jar(rec.jar);
         const np = KP.detectProfile(jar, KP.parseManifest(jar.text('META-INF/MANIFEST.MF') || ''), rec.fileName || '');
-        if (np.portraitTouch) { rec.w = np.w; rec.h = np.h; rec.touch = true; rec.rotate = 0; }
+        if (np.reason === 'bytecode' && np.touch && np.w === 480) { rec.w = np.w; rec.h = np.h; rec.touch = true; rec.rotate = np.rotate; }
       } catch (e) { /* keep the stored profile */ }
     }
     DB.put(rec);
