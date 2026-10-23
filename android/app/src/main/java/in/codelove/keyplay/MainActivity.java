@@ -20,6 +20,7 @@ import android.provider.OpenableColumns;
 import android.util.Base64;
 import android.view.View;
 import android.view.Window;
+import android.view.WindowInsets;
 import android.view.WindowManager;
 import android.webkit.JavascriptInterface;
 import android.webkit.MimeTypeMap;
@@ -51,6 +52,7 @@ public class MainActivity extends Activity {
 	private static final int PICK_FILES = 1;
 
 	private WebView web;
+	private android.widget.FrameLayout root;
 	private ValueCallback<Uri[]> fileCallback;
 	private boolean pageReady;
 	private String pendingJarJs;
@@ -90,7 +92,24 @@ public class MainActivity extends Activity {
 		web.addJavascriptInterface(new Bridge(), "JavaPlayAndroid");
 		web.setWebViewClient(new Client());
 		web.setWebChromeClient(new Chrome());
-		setContentView(web);
+		// the page always lays out under the system bars and the bar space is added here as padding:
+		// home screen = padded below the status bar, game = no padding (the WebView gets the cutout insets).
+		// Letting Android re-fit the window after full screen left a gap above the home screen on some phones.
+		root = new android.widget.FrameLayout(this);
+		root.setBackgroundColor(Color.parseColor("#0E1014"));
+		root.addView(web, new android.widget.FrameLayout.LayoutParams(-1, -1));
+		root.setOnApplyWindowInsetsListener((v, insets) -> {
+			if (gameMode) {
+				v.setPadding(0, 0, 0, 0);
+				return insets;
+			}
+			v.setPadding(insets.getSystemWindowInsetLeft(), insets.getSystemWindowInsetTop(),
+					insets.getSystemWindowInsetRight(), insets.getSystemWindowInsetBottom());
+			WindowInsets rest = insets.consumeSystemWindowInsets();
+			return Build.VERSION.SDK_INT >= 28 ? rest.consumeDisplayCutout() : rest;
+		});
+		setContentView(root);
+		hideSystemBars(false);
 
 		web.loadUrl(ORIGIN + "play.html");
 		handleIntent(getIntent());
@@ -223,19 +242,12 @@ public class MainActivity extends Activity {
 
 	private void hideSystemBars(boolean on) {
 		View d = getWindow().getDecorView();
-		Window w = getWindow();
-		if (on) {
-			w.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-			d.setSystemUiVisibility(View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY | View.SYSTEM_UI_FLAG_FULLSCREEN
-					| View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-					| View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
-		} else {
-			w.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-			d.setSystemUiVisibility(0);
-		}
-		// re-measure right away so the page does not keep the full-screen insets (gap above the home screen)
-		if (Build.VERSION.SDK_INT >= 20) d.requestApplyInsets();
-		web.requestLayout();
+		// layout flags stay the same in both modes, so the window never re-fits; root padding does the rest
+		int layout = View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION;
+		d.setSystemUiVisibility(on
+				? layout | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY | View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+				: layout);
+		root.requestApplyInsets();
 	}
 
 	private class Client extends WebViewClient {

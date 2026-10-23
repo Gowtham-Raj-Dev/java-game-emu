@@ -21,8 +21,8 @@ android {
         applicationId 'in.codelove.keyplay'
         minSdk 21
         targetSdk 34
-        versionCode 15
-        versionName '2.6.3'
+        versionCode 16
+        versionName '2.6.4'
     }
 
     signingConfigs {
@@ -57,8 +57,8 @@ android {
 // Release: `gradlew publishApk` builds the signed APK, copies it to web/download/JavaPlay.apk and writes
 // web/version.json. Installed apps read version.json on start and send people to the website to update. Bump versionCode first.
 def releaseNotes = [
-    'Green Farm no longer shows a blank screen: games that redraw themselves every frame now paint correctly',
-    'Zombie Infection and other 480x800 touch games run at full size with their own on-screen controls',
+    'No more empty space above the home screen after you leave a game',
+    'The + button now stays on top of the game cards when you scroll',
 ]
 def relCode = android.defaultConfig.versionCode
 def relName = android.defaultConfig.versionName
