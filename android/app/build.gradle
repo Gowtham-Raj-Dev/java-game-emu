@@ -21,8 +21,8 @@ android {
         applicationId 'in.codelove.keyplay'
         minSdk 21
         targetSdk 34
-        versionCode 17
-        versionName '2.6.5'
+        versionCode 18
+        versionName '2.6.6'
     }
 
     signingConfigs {
@@ -57,7 +57,7 @@ android {
 // Release: `gradlew publishApk` builds the signed APK, copies it to web/download/JavaPlay.apk and writes
 // web/version.json. Installed apps read version.json on start and send people to the website to update. Bump versionCode first.
 def releaseNotes = [
-    'No more empty space on the left or right of the home screen after you play a game sideways',
+    'The home screen looks the same after every game: no empty space on the left, right or bottom',
 ]
 def relCode = android.defaultConfig.versionCode
 def relName = android.defaultConfig.versionName

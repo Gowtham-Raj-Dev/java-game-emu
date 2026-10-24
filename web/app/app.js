@@ -346,6 +346,7 @@
     prof = profileOf(rec);
     $('home').hidden = true;
     $('player').hidden = false;
+    document.documentElement.classList.add('playing');
     try {
       emu = new KP.Emulator({
         jarBytes: rec.jar,
@@ -414,6 +415,7 @@
     current = null;
     $('player').hidden = true;
     $('home').hidden = false;
+    document.documentElement.classList.remove('playing');
     if (Bridge && Bridge.setOrientation) Bridge.setOrientation('auto');
     if (Bridge && Bridge.setFullscreen) Bridge.setFullscreen(false);
     if (MOBILE_WEB && document.fullscreenElement) document.exitFullscreen().catch(() => {});

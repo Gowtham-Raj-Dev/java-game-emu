@@ -1,9 +1,9 @@
 {
-    "versionCode": 17,
-    "versionName": "2.6.5",
+    "versionCode": 18,
+    "versionName": "2.6.6",
     "kb": 245,
-    "apk": "https://javaplay.codelove.in/download/JavaPlay.apk?v=17",
+    "apk": "https://javaplay.codelove.in/download/JavaPlay.apk?v=18",
     "notes": [
-        "No more empty space on the left or right of the home screen after you play a game sideways"
+        "The home screen looks the same after every game: no empty space on the left, right or bottom"
     ]
 }
