@@ -57,6 +57,13 @@ a { color: var(--accent); }
 /* Android app: the home screen sits below the status bar, so ignore the safe-area inset the WebView
    keeps from full-screen play (it left a gap above the app bar after leaving a game) */
 .in-app .appbar { padding-top: 0; min-height: 58px; }
+/* same for the sides and bottom: MainActivity already pads home for the bars, and a stale inset from a
+   landscape game left a gap on the left or right of the whole home screen */
+.in-app .appbar { padding-left: 16px; padding-right: 10px; }
+.in-app .tabs { padding-left: 8px; padding-right: 8px; }
+.in-app .home-body { padding: 14px 12px 96px; }
+.in-app .urlbar { margin-left: 10px; margin-right: 10px; }
+.in-app .fab { right: 18px; bottom: 22px; }
 .card .meta { font: 0.72rem var(--mono); color: var(--muted); margin-top: auto; }
 .card .more { position: absolute; top: 12px; right: 12px; z-index: 1; width: 34px; height: 34px; border-radius: 50%; border: 0; background: rgba(14, 16, 20, 0.7); color: #fff; cursor: pointer; font-size: 1.3rem; line-height: 1; }
 .card .more:active { background: var(--key); }

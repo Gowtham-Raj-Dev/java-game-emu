@@ -1,10 +1,9 @@
 {
-    "versionCode": 16,
-    "versionName": "2.6.4",
-    "kb": 244,
-    "apk": "https://javaplay.codelove.in/download/JavaPlay.apk?v=16",
+    "versionCode": 17,
+    "versionName": "2.6.5",
+    "kb": 245,
+    "apk": "https://javaplay.codelove.in/download/JavaPlay.apk?v=17",
     "notes": [
-        "No more empty space above the home screen after you leave a game",
-        "The + button now stays on top of the game cards when you scroll"
+        "No more empty space on the left or right of the home screen after you play a game sideways"
     ]
 }
