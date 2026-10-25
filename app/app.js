@@ -812,7 +812,7 @@
     ['https://codelove.in', 'CodeLove', 'codelove.in'],
     ['https://models.codelove.in', 'Free 3D Models', 'models.codelove.in'],
     ['https://games.codelove.in', 'Free 3D Games', 'games.codelove.in'],
-    ['https://downloader.codelove.in', 'Insta & Pinterest Downloader', 'downloader.codelove.in'],
+    ['https://downloader.codelove.in', 'Insta Downloader', 'downloader.codelove.in'],
     ['https://linkinbio.codelove.in', 'Link in Bio', 'linkinbio.codelove.in'],
     ['https://videotogif.codelove.in', 'Video to GIF', 'videotogif.codelove.in'],
     ['https://videotoimages.codelove.in', 'Video to Images', 'videotoimages.codelove.in'],
