@@ -18,6 +18,9 @@
 .sf-codelove { display: block; width: fit-content; }
 .sf-codelove img { height: 44px; width: auto; }
 .sf-codelove:hover img { opacity: 0.85; }
+.sf-cl { max-width: 270px; }
+.sf-cl p { margin: 12px 0 0; font-size: 0.875rem; line-height: 1.6; }
+.sf-cl p a { font-weight: 600; color: var(--fg); }
 .sf-bottom { margin-top: 28px; padding-top: 24px; border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px 24px; font-size: 0.85rem; }
 .sf-bottom p { margin: 0; }
 .sf-bottom p { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 0 4px; }
