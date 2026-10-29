@@ -46,3 +46,8 @@
 @media (max-width: 460px) {
   .sf-bottom { flex-direction: column; }
 }
+
+/* Gowtham's WhatsApp, just the icon (same on every CodeLove site) */
+.sf-wa { display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: #25D366; color: #fff; transition: transform .15s ease; }
+.sf-wa:hover { transform: scale(1.1); }
+.sf-wa svg { width: 16px; height: 16px; fill: currentColor; }
