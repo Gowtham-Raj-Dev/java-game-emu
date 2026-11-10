@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+  body {
+    background: #0E1014;
+    color: #EEF0F4;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    gap: 8px;
+    border-bottom: 1px solid #232732;
+    -webkit-app-region: drag;
+  }
+  .btn {
+    -webkit-app-region: no-drag;
+    background: transparent;
+    border: none;
+    color: #A0A6B5;
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    transition: background 0.15s, color 0.15s;
+  }
+  .btn:hover:not(:disabled) {
+    background: #232732;
+    color: #FFF;
+  }
+  .btn:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+  .btn svg {
+    width: 18px;
+    height: 18px;
+    fill: currentColor;
+  }
+  .address-bar {
+    -webkit-app-region: no-drag;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    background: #171A21;
+    border: 1px solid #2B303C;
+    border-radius: 8px;
+    padding: 0 12px;
+    height: 36px;
+  }
+  .address-bar:focus-within {
+    border-color: #4A90E2;
+  }
+  .address-bar input {
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #FFF;
+    font-size: 13.5px;
+    width: 100%;
+  }
+  .download-banner {
+    position: fixed;
+    top: 56px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1C202A;
+    border: 1px solid #3E4657;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+    padding: 12px 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    z-index: 99999;
+    animation: slideDown 0.25s ease-out;
+  }
+  @keyframes slideDown {
+    from { opacity: 0; transform: translate(-50%, -10px); }
+    to { opacity: 1; transform: translate(-50%, 0); }
+  }
+  .download-banner.hidden { display: none; }
+  .banner-text { font-size: 13.5px; }
+  .banner-name { font-weight: 600; color: #FFF; }
+  .banner-actions { display: flex; gap: 8px; }
+  .action-btn {
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+  }
+  .btn-play { background: #2563EB; color: #FFF; }
+  .btn-play:hover { background: #1D4ED8; }
+  .btn-add { background: #374151; color: #E5E7EB; }
+  .btn-add:hover { background: #4B5563; }
+</style>
+</head>
+<body>
+  <button id="btnBack" class="btn" title="Back">
+    <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+  </button>
+  <button id="btnForward" class="btn" title="Forward">
+    <svg viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
+  </button>
+  <button id="btnReload" class="btn" title="Reload">
+    <svg viewBox="0 0 24 24"><path d="M17.65 6.35A7.958 7.958 0 0 0 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+  </button>
+  <div class="address-bar">
+    <input id="urlInput" type="text" placeholder="Search or enter web address..." autocomplete="off" spellcheck="false">
+  </div>
+  <button id="btnClose" class="btn" title="Close Browser">
+    <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+  </button>
+
+  <div id="banner" class="download-banner hidden">
+    <div class="banner-text">
+      <span>Downloaded: </span><span id="bannerGame" class="banner-name">Game.jar</span>
+    </div>
+    <div class="banner-actions">
+      <button id="btnPlayNow" class="action-btn btn-play">Play Now</button>
+      <button id="btnAddMine" class="action-btn btn-add">Add to My Games</button>
+      <button id="btnDismiss" class="btn" style="width:28px;height:28px;">✕</button>
+    </div>
+  </div>
+
+<script>
+  const { ipcRenderer } = require('electron');
+  const btnBack = document.getElementById('btnBack');
+  const btnForward = document.getElementById('btnForward');
+  const btnReload = document.getElementById('btnReload');
+  const btnClose = document.getElementById('btnClose');
+  const urlInput = document.getElementById('urlInput');
+  const banner = document.getElementById('banner');
+  const bannerGame = document.getElementById('bannerGame');
+  const btnPlayNow = document.getElementById('btnPlayNow');
+  const btnAddMine = document.getElementById('btnAddMine');
+  const btnDismiss = document.getElementById('btnDismiss');
+
+  let currentPendingDownload = null;
+
+  btnBack.addEventListener('click', () => ipcRenderer.send('browser-go-back'));
+  btnForward.addEventListener('click', () => ipcRenderer.send('browser-go-forward'));
+  btnReload.addEventListener('click', () => ipcRenderer.send('browser-reload'));
+  btnClose.addEventListener('click', () => ipcRenderer.send('browser-close'));
+
+  urlInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      let url = urlInput.value.trim();
+      if (!url) return;
+      if (!/^https?:\/\//i.test(url)) {
+        if (url.includes('.') && !url.includes(' ')) {
+          url = 'https://' + url;
+        } else {
+          url = 'https://www.google.com/search?q=' + encodeURIComponent(url);
+        }
+      }
+      ipcRenderer.send('browser-navigate', url);
+    }
+  });
+
+  ipcRenderer.on('browser-url-changed', (event, { url, canGoBack, canGoForward }) => {
+    urlInput.value = url;
+    btnBack.disabled = !canGoBack;
+    btnForward.disabled = !canGoForward;
+  });
+
+  ipcRenderer.on('browser-download-complete', (event, item) => {
+    currentPendingDownload = item;
+    bannerGame.textContent = item.name;
+    banner.classList.remove('hidden');
+  });
+
+  btnPlayNow.addEventListener('click', () => {
+    if (currentPendingDownload) {
+      ipcRenderer.send('browser-handle-download', { ...currentPendingDownload, start: true });
+      banner.classList.add('hidden');
+    }
+  });
+
+  btnAddMine.addEventListener('click', () => {
+    if (currentPendingDownload) {
+      ipcRenderer.send('browser-handle-download', { ...currentPendingDownload, start: false });
+      banner.classList.add('hidden');
+    }
+  });
+
+  btnDismiss.addEventListener('click', () => {
+    banner.classList.add('hidden');
+  });
+</script>
+</body>
+</html>

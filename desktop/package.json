@@ -1,0 +1,83 @@
+{
+  "name": "javaplay-desktop",
+  "productName": "JavaPlay",
+  "version": "2.6.6",
+  "description": "JavaPlay – J2ME Phone Game Emulator for Windows",
+  "main": "src/main.js",
+  "author": {
+    "name": "Gowtham",
+    "url": "https://javaplay.codelove.in"
+  },
+  "scripts": {
+    "sync-web": "node scripts/sync-web.js",
+    "start": "electron .",
+    "pack": "npm run sync-web && electron-builder --dir",
+    "dist": "npm run sync-web && electron-builder --win",
+    "dist:portable": "npm run sync-web && electron-builder --win portable",
+    "publish:web": "npm run sync-web && node scripts/publish-win.js"
+  },
+  "dependencies": {
+    "electron-updater": "^6.3.9"
+  },
+  "devDependencies": {
+    "electron": "^32.2.0",
+    "electron-builder": "^25.1.8",
+    "png-to-ico": "^3.0.2"
+  },
+  "build": {
+    "appId": "in.codelove.javaplay",
+    "productName": "JavaPlay",
+    "copyright": "Copyright © 2026 CodeLove",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "src/**/*",
+      "web/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.ico",
+      "artifactName": "JavaPlay-Setup-${version}.${ext}",
+      "fileAssociations": [
+        {
+          "ext": "jar",
+          "name": "Java Game Archive",
+          "description": "J2ME Java Game Archive",
+          "icon": "build/icon.ico",
+          "role": "Viewer"
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "JavaPlay",
+      "runAfterFinish": true
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "Gowtham-Raj-Dev",
+        "repo": "java-game-emu"
+      }
+    ]
+  }
+}

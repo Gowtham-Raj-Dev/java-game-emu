@@ -1,9 +1,10 @@
-# JavaPlay – J2ME emulator for Android and the browser
+# JavaPlay – J2ME emulator for Android, Windows and the browser
 
 JavaPlay plays old Java (J2ME / MIDP) phone games. The game screen sits on top and a phone keypad sits below it.
 
 - **Website + browser player:** `web/`, live at **https://javaplay.codelove.in** (GitHub Pages, `gh-pages` = subtree of `web/`). Part of the [CodeLove](https://codelove.in) network.
-- **Android app:** `android/` (a 168 KB native shell that runs the same engine)
+- **Android app:** `android/` (a native shell that runs the same engine with private origin)
+- **Windows Desktop app:** `desktop/` (Electron desktop shell with native menus, in-app game browser, .jar file association, offline storage and auto-updates)
 
 The emulator engine is written from scratch in JavaScript. It does not use code from any other emulator.
 
@@ -49,6 +50,29 @@ cd android
 ```
 
 Release signing reads `android/keystore.properties` and `android/signing/keyplay.jks`. Both are git-ignored, so keep a backup. Without the same key, users cannot update the app.
+
+## Windows Desktop app (`desktop/`)
+
+The Windows Desktop app runs the same offline engine with native enhancements:
+- **Automatic updates:** checks `version.json` / GitHub releases on start and automatically downloads and installs new versions.
+- **In-app game browser:** search and download `.jar` games directly from PHONEKY, Internet Archive, and Google with one-click "Play Now" or "Add to My Games".
+- **File association & drag-and-drop:** double-clicking any `.jar` file in Windows Explorer or dragging it into JavaPlay loads the game instantly.
+- **Gameplay recording:** saves gameplay webm videos straight to `Videos/JavaPlay`.
+- **Keyboard & Gamepad:** arrows, numpad, F1/F2 soft keys, customizable keys in Menu → Controls.
+
+```bash
+# Run desktop app locally in development
+npm run desktop
+
+# Package into an unpacked executable (fast preview in desktop/dist/win-unpacked/)
+npm run desktop:pack
+
+# Build Windows NSIS installer and portable EXE in desktop/dist/
+npm run desktop:build
+
+# Publish Windows installer to web/download/JavaPlay-Setup.exe and update version.json (like Android publishApk)
+npm run desktop:publish
+```
 
 ## Tests
 

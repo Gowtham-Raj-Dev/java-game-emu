@@ -1,0 +1,15 @@
+{
+  "name": "java-game-emu",
+  "version": "2.6.6",
+  "description": "JavaPlay – J2ME emulator for Android, Windows desktop and the browser",
+  "scripts": {
+    "serve": "node serve.js",
+    "desktop": "npm --prefix desktop start",
+    "desktop:build": "npm --prefix desktop run dist",
+    "desktop:pack": "npm --prefix desktop run pack",
+    "desktop:publish": "npm --prefix desktop run publish:web",
+    "desktop:sync": "npm --prefix desktop run sync-web"
+  },
+  "author": "Gowtham <gowtham@codelove.in>",
+  "license": "ISC"
+}

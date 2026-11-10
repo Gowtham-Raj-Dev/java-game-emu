@@ -28,3 +28,8 @@ emulator-src/
 *.log
 .DS_Store
 Thumbs.db
+
+# Desktop build output and synced assets
+desktop/node_modules/
+desktop/dist/
+desktop/web/
