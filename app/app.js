@@ -827,7 +827,7 @@
       const sites = NETWORK.map(([u, n, d]) => '<a href="' + u + '" target="_blank" rel="noopener">' + esc(n) + '<small>' + esc(d) + '</small></a>').join('');
       body.insertAdjacentHTML('beforeend',
         '<div class="about-top"><img src="assets/javaplay-logo.png" alt="" width="56" height="56"><div><strong>JavaPlay</strong>' +
-        '<span>Version ' + VERSION + (IN_APP ? ' · Android app' : ' · Web player') + '<br>Free J2ME emulator for old Java phone games</span></div></div>' +
+        '<span>Version ' + VERSION + (Bridge && Bridge.isDesktop ? ' · Windows app' : (IN_APP ? ' · Android app' : ' · Web player')) + '<br>Free J2ME emulator for old Java phone games</span></div></div>' +
         '<div class="sec"><h3>Credits</h3>' +
         '<a class="credit" href="https://gowtham.codelove.in" target="_blank" rel="noopener"><span class="av">G</span><span><strong>Made by Gowtham</strong><small>Design, code and the JavaPlay engine · gowtham.codelove.in</small></span><span class="go">›</span></a>' +
         '<a class="credit" href="https://codelove.in" target="_blank" rel="noopener"><span class="av cl">' + CODELOVE_ICON + '</span><span><strong>A CodeLove product</strong><small>Free tools and games · codelove.in</small></span><span class="go">›</span></a>' +
@@ -839,7 +839,10 @@
         'Free games in the catalog belong to their authors and are shared under their own open licenses; see each game\'s details.<br>' +
         'Made with <span class="heart">♥</span> by Gowtham · © ' + new Date().getFullYear() + ' CodeLove</p>');
       if (CAN_UPDATE) body.appendChild(opt('⟳', 'Check for updates', () => { close(); checkUpdate(true); }));
-      else if (!IN_APP) body.insertAdjacentHTML('beforeend', '<a class="btn" style="width:100%;margin-bottom:8px" href="' + SITE + 'download/JavaPlay.apk" download>Get the Android app</a>');
+      else if (!IN_APP) {
+        body.insertAdjacentHTML('beforeend', '<a class="btn" style="width:100%;margin-bottom:8px" href="' + SITE + 'download/JavaPlay-Setup.exe" download>Get the Windows app (.exe)</a>');
+        body.insertAdjacentHTML('beforeend', '<a class="btn" style="width:100%;margin-bottom:8px" href="' + SITE + 'download/JavaPlay.apk" download>Get the Android app</a>');
+      }
       body.appendChild(opt('', 'Close', () => close(), 'primary'));
     });
   }
@@ -879,12 +882,23 @@
         body.appendChild(ul);
       }
       const how = document.createElement('p'); how.className = 'info';
-      how.textContent = 'The app does not download anything itself: the button opens javaplay.codelove.in in your browser, which downloads the new JavaPlay. Open it and tap Update.';
-      body.appendChild(how);
-      body.appendChild(opt('', 'Download in browser', () => {
-        close();
-        Bridge.openExternal(SITE + '?update=' + v.versionCode + '#download');
-      }, 'primary'));
+      const isDesk = Bridge && Bridge.isDesktop;
+      if (isDesk) {
+        how.textContent = 'JavaPlay Desktop will automatically download and install the update for you.';
+        body.appendChild(how);
+        body.appendChild(opt('', 'Update automatically', () => {
+          close();
+          if (Bridge.startUpdate) Bridge.startUpdate();
+          else Bridge.openExternal(SITE + '?update=' + v.versionCode + '#download');
+        }, 'primary'));
+      } else {
+        how.textContent = 'The app does not download anything itself: the button opens javaplay.codelove.in in your browser, which downloads the new JavaPlay. Open it and tap Update.';
+        body.appendChild(how);
+        body.appendChild(opt('', 'Download in browser', () => {
+          close();
+          Bridge.openExternal(SITE + '?update=' + v.versionCode + '#download');
+        }, 'primary'));
+      }
       body.appendChild(opt('', 'Later', () => {
         try { localStorage.setItem('kp:updLater', JSON.stringify({ code: v.versionCode, at: Date.now() })); } catch (e) { /* ignore */ }
         close();

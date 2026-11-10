@@ -294,13 +294,17 @@ section + section { border-top: 1px solid var(--line-soft); }
   <div class="hero">
     <div class="wrap">
       <div class="hero-copy">
-        <p class="pill"><b></b>J2ME emulator · Android &amp; browser</p>
+        <p class="pill"><b></b>J2ME emulator · Android, Windows &amp; browser</p>
         <h1>Old Java phone games, <em>back in your hand.</em></h1>
         <p class="lede">JavaPlay runs classic <code>.jar</code> games from the Nokia, Sony Ericsson and Gameloft days. The game sits on top and a real phone keypad sits below it: soft keys, D-pad, OK and 0–9.</p>
         <div class="cta" id="download">
           <a class="btn primary" href="download/JavaPlay.apk" download>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 20h14"/></svg>
             Download Android app
+          </a>
+          <a class="btn" href="download/JavaPlay-Setup.exe" download title="Download JavaPlay for Windows (64-bit)">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="width:17px;height:17px;vertical-align:middle;margin-right:6px"><path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.9-1.801"/></svg>
+            Download Windows app (.exe)
           </a>
           <a class="btn" href="games">
             <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l11-6.5a1 1 0 0 0 0-1.72l-11-6.5A1 1 0 0 0 8 5.5Z"/></svg>
@@ -470,7 +474,7 @@ section + section { border-top: 1px solid var(--line-soft); }
         </details>
         <details>
           <summary>Can I play on a computer?</summary>
-          <p>Yes. Open Play in browser, add a .jar and use the keyboard or click the keypad. Use a recent Chrome or Edge.</p>
+          <p>Yes! You can download the <strong><a href="download/JavaPlay-Setup.exe" download>JavaPlay Windows desktop app</a></strong> with offline play, keyboard &amp; gamepad controls, .jar file association and auto-updates, or play directly in your browser with <a href="play">Play in browser</a>.</p>
         </details>
         </div>
       </div>
@@ -486,7 +490,8 @@ section + section { border-top: 1px solid var(--line-soft); }
         </div>
         <div class="cta">
           <a class="btn primary" href="play">Play in browser</a>
-          <a class="btn" href="download/JavaPlay.apk" download>Get the app</a>
+          <a class="btn" href="download/JavaPlay.apk" download>Android app</a>
+          <a class="btn" href="download/JavaPlay-Setup.exe" download>Windows app (.exe)</a>
         </div>
       </div>
     </div>
@@ -507,6 +512,7 @@ section + section { border-top: 1px solid var(--line-soft); }
           <li><a href="play">Play in browser</a></li>
           <li><a href="games">Free Java games</a></li>
           <li><a href="download/JavaPlay.apk" download>Android app</a></li>
+          <li><a href="download/JavaPlay-Setup.exe" download>Windows app (.exe)</a></li>
         </ul>
       </nav>
       <nav aria-label="Help">
@@ -569,7 +575,8 @@ fetch('games/catalog.json').then((r) => r.json()).then((d) => {
 (function () {
   const code = new URLSearchParams(location.search).get('update');
   if (!code) return;
-  const apk = 'download/JavaPlay.apk?v=' + encodeURIComponent(code);
+  const isWin = new URLSearchParams(location.search).get('os') === 'win' || /Windows/i.test(navigator.userAgent);
+  const apk = (isWin ? 'download/JavaPlay-Setup.exe?v=' : 'download/JavaPlay.apk?v=') + encodeURIComponent(code);
   const bar = document.createElement('div');
   bar.setAttribute('role', 'status');
   bar.style.cssText = 'position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:50;max-width:520px;margin:0 auto;background:#1b1e26;border:1px solid #ff8a1f;border-radius:18px;padding:16px 18px;box-shadow:0 18px 40px rgba(0,0,0,.5);font:500 .95rem/1.45 Figtree,system-ui,sans-serif;color:#eef0f4';
@@ -580,7 +587,7 @@ fetch('games/catalog.json').then((r) => r.json()).then((d) => {
   bar.querySelector('button').addEventListener('click', () => bar.remove());
   document.body.appendChild(bar);
   const a = document.createElement('a');
-  a.href = apk; a.download = 'JavaPlay.apk';
+  a.href = apk; a.download = isWin ? 'JavaPlay-Setup.exe' : 'JavaPlay.apk';
   document.body.appendChild(a); a.click(); a.remove();
 })();
 </script>

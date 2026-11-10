@@ -3,6 +3,15 @@
     "versionName": "2.6.6",
     "kb": 245,
     "apk": "https://javaplay.codelove.in/download/JavaPlay.apk?v=18",
+    "win": {
+        "versionCode": 18,
+        "versionName": "2.6.6",
+        "kb": 89665,
+        "url": "https://javaplay.codelove.in/download/JavaPlay-Setup.exe?v=18",
+        "notes": [
+            "Windows Desktop app release with offline engine, keyboard & controller mapping, and in-app game downloader."
+        ]
+    },
     "notes": [
         "The home screen looks the same after every game: no empty space on the left, right or bottom"
     ]
