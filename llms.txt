@@ -1,0 +1,14 @@
+# JavaPlay — Free J2ME Emulator (by CodeLove)
+
+> Play 163 classic Java (.jar) mobile phone games online in your browser or with a 245 KB Android app featuring a real T9 keypad.
+
+## Pages
+- [Home](https://javaplay.codelove.in/): JavaPlay features, game showcase, and Android APK download.
+- [Play in Browser](https://javaplay.codelove.in/play): Interactive HTML5/JS J2ME phone emulator.
+
+## CodeLove Ecosystem
+- [CodeLove](https://codelove.in)
+- [Free 3D Games](https://games.codelove.in)
+- [Video Cut](https://videocut.codelove.in)
+- [Gowtham](https://gowtham.codelove.in)
+

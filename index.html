@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>JavaPlay by CodeLove – Free J2ME Emulator: Play Java Phone Games Online &amp; on Android</title>
-<meta name="description" content="JavaPlay is a free J2ME emulator. Play old Java (.jar) phone games online in your browser or in a 245 KB Android app with a real phone keypad. 163 free games, no sign-up.">
+<title>JavaPlay – Play Old Java Games Online &amp; on Android</title>
+<meta name="description" content="Play 163 classic Java (.jar) phone games free in your browser or the 245 KB Android app with a virtual phone keypad. No sign-up required.">
 <meta name="keywords" content="j2me emulator, java games, java games online, play java games online, online java games, javaplay, game java online, java games play online, javgames, jav play, java game emulator, j2me emulator android, jar game player, old nokia games, free java games, play java games, jar games, codelove">
 <meta name="author" content="Gowtham">
 <link rel="author" href="https://gowtham.codelove.in">
@@ -24,14 +24,14 @@
 <meta property="og:site_name" content="JavaPlay by CodeLove">
 <meta property="og:locale" content="en_US">
 <meta property="og:url" content="https://javaplay.codelove.in/">
-<meta property="og:title" content="JavaPlay by CodeLove – Free J2ME Emulator: Play Java Phone Games Online &amp; on Android">
+<meta property="og:title" content="JavaPlay – Play Old Java Games Online &amp; on Android">
 <meta property="og:description" content="Play old Java (J2ME) phone games in your browser or on Android. 163 free games, 245 KB app, real phone keypad.">
 <meta property="og:image" content="https://javaplay.codelove.in/assets/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="JavaPlay – play old Java phone games in your browser and on Android">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="JavaPlay by CodeLove – Free J2ME Emulator: Play Java Phone Games Online &amp; on Android">
+<meta name="twitter:title" content="JavaPlay – Play Old Java Games Online &amp; on Android">
 <meta name="twitter:description" content="Play old Java (J2ME) phone games in your browser or on Android. 163 free games, 245 KB app, real phone keypad.">
 <meta name="twitter:image" content="https://javaplay.codelove.in/assets/og.png">
 <script type="application/ld+json">
@@ -601,7 +601,7 @@ fetch('games/catalog.json').then((r) => r.json()).then((d) => {
   document.querySelectorAll('.free-count').forEach((el) => { el.textContent = d.count; });
   const pick = d.games.filter((g) => g.shot).sort(() => Math.random() - 0.5).slice(0, 6);
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-  document.getElementById('strip').innerHTML = pick.map((g) => '<a href="play?game=' + encodeURIComponent(g.id) + '"><div class="sc"><img loading="lazy" alt="" src="' + esc(g.shot) + '"></div><span>' + esc(g.name) + '</span></a>').join('');
+  document.getElementById('strip').innerHTML = pick.map((g) => '<a href="play?game=' + encodeURIComponent(g.id) + '"><div class="sc"><img loading="lazy" alt="" width="240" height="320" src="' + esc(g.shot) + '"></div><span>' + esc(g.name) + '</span></a>').join('');
 }).catch(() => {});
 
 // ?update=<versionCode>: opened by the JavaPlay app's "Update now". Start the APK download and say how to finish.
