@@ -816,6 +816,8 @@
     ['https://linkinbio.codelove.in', 'Link in Bio', 'linkinbio.codelove.in'],
     ['https://videotogif.codelove.in', 'Video to GIF', 'videotogif.codelove.in'],
     ['https://videotoimages.codelove.in', 'Video to Images', 'videotoimages.codelove.in'],
+    ['https://videocut.codelove.in', 'Video Cut', 'videocut.codelove.in'],
+    ['https://videomaker.codelove.in', 'Free AI Video Maker', 'videomaker.codelove.in'],
     ['https://utubeflow.codelove.in', 'Free YouTube Automation', 'utubeflow.codelove.in'],
   ];
   // CodeLove "C + heart" mark (codelove-parent-domain/public/new-logo/c-heart-icon-transparent.svg)
