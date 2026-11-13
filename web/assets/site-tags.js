@@ -16,6 +16,8 @@
     if (cors) s.crossOrigin = "anonymous";
     document.head.appendChild(s);
   }
+  // CodeLove Analytics (admin.codelove.in): own visitor/time/click counts.
+  load("https://admin.codelove.in/t.js", false);
   if (ADSENSE_CLIENT) load("https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=" + ADSENSE_CLIENT, true);
   if (GA_MEASUREMENT_ID) {
     load("https://www.googletagmanager.com/gtag/js?id=" + GA_MEASUREMENT_ID, false);
